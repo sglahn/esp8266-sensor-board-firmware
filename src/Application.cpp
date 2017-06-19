@@ -1,12 +1,14 @@
 #include <ESP8266WiFi.h>
 
-#include "configuration.h"
+#include "EEPROMConfiguration.h"
 #include "httpServer.h"
 #include "wifiManager.h"
 
 #define STATUS_LED 2
 
 WiFiServer server(AP_SERVER_PORT);
+
+EEPROMConfiguration *eepromConfig = new EEPROMConfiguration();
 
 void setup()
 {
@@ -19,12 +21,12 @@ void setup()
   }
 
   EEPROM.begin(512);
-  if (isEepromEmpty())
+  if (eepromConfig->isEepromEmpty())
   {
-    writeConfigurationToEeprom(createDefaultConfiguration());
+    eepromConfig->writeConfigurationToEeprom(eepromConfig->createDefaultConfiguration());
   }
 
-  Configuration config = readConfigurationFromEeprom();
+  Configuration config = eepromConfig->readConfigurationFromEeprom();
 
   if (!connectToWifi(config)) {
     setupAccessPoint();
@@ -35,7 +37,7 @@ void setup()
 
 void loop()
 {
-  Configuration config = readConfigurationFromEeprom();
+  Configuration config = eepromConfig->readConfigurationFromEeprom();
 
   ESP.deepSleep(config.sleepInterval * 60000, WAKE_RF_DEFAULT);
 
@@ -75,7 +77,7 @@ void loop()
       config.sleepInterval = atoi(sleepInterval.c_str());
       strcpy(config.otaUrl, otaUrl.c_str());
       config.otaUpdateInterval = atoi(otaUpdateInterval.c_str());
-      writeConfigurationToEeprom(config);
+      eepromConfig->writeConfigurationToEeprom(config);
     }
     response = htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval);
   }
