@@ -1,12 +1,9 @@
-#ifndef CONFIGURATION_H_
-#define CONFIGURATION_H_
+#ifndef EEPROMCONFIGURATION_H_
+#define EEPROMCONFIGURATION_H_
 
 #include <EEPROM.h>
 #include "HardwareSerial.h"
 
-/*
- * Configuration is stored in EEPROM
-*/
 struct Configuration
 {
     char ssid[32]; // WLAN ssid
@@ -23,24 +20,19 @@ class EEPROMConfiguration
         int eeStartAddress = 0;
 
     public:
-        /*
-         * Checks if EEPROM is empty ro not.
-         */
+        // Checks if EEPROM is empty ro not.
         bool isEepromEmpty();
+	
+	// Erase data in EEPROM
+	void eraseEeprom();
 
-        /*
-         * Creates valid default configuration for faster testing and development.
-         */
+        // Creates and returns valid default configuration
         Configuration createDefaultConfiguration();
 
-        /*
-         * Reads and returns the configuration from EEPROM.
-         */
+        // Reads and returns the configuration from EEPROM.
         Configuration readConfigurationFromEeprom();
 
-        /*
-         * Writes the configuration to EEPROM.
-         */
+        // Writes the configuration to EEPROM.
         void writeConfigurationToEeprom(Configuration config);
 };
 

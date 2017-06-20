@@ -15,11 +15,24 @@ bool EEPROMConfiguration::isEepromEmpty()
     return true;
 }
 
+void EEPROMConfiguration::eraseEeprom() 
+{
+    for (int i=eeStartAddress; i<EEPROM.length(); i++) {
+        EEPROM.write(i, 0);
+    }
+    EEPROM.commit();
+}
+
 Configuration EEPROMConfiguration::createDefaultConfiguration()
 {
     return Configuration
     {
-        "", "", "", 0, "", 0
+        "", 
+	"", 
+	"", 
+	0, 
+	"", 
+	0
     };
 }
 
@@ -42,3 +55,4 @@ void EEPROMConfiguration::writeConfigurationToEeprom(Configuration config)
     EEPROM.put(eeStartAddress, config);
     EEPROM.commit();
 }
+
