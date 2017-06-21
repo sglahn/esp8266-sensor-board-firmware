@@ -2,7 +2,7 @@
 #define WIFIMANAGER_H_
 
 #include <ESP8266WiFi.h>
-#include "EEPROMConfiguration.h"
+#include "EepromConfiguration.h"
 
 #define AP_PSK "password"
 

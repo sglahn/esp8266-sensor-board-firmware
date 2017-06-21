@@ -5,15 +5,11 @@
 #include "WifiManager.h"
 #include "resources.h"
 
-#define STATUS_LED 2
-
-
-
 EepromConfiguration* eepromConfig;
 HttpServer* httpServer;
 WifiManager* wifiManager;
 Configuration config;
-bool CONFIG_MODE = true;
+bool CONFIG_MODE = false;
 
 void setup()
 {
@@ -32,9 +28,11 @@ void setup()
   }
   config = eepromConfig->readConfigurationFromEeprom();
 
-  if (!wifiManager->connectToWifi(config)) {
-    wifiManager->setupAccessPoint();
-    httpServer->start();
+  if (!wifiManager->connectToWifi(config))
+  {
+      CONFIG_MODE = true;
+      wifiManager->setupAccessPoint();
+      httpServer->start();
   }
 }
 

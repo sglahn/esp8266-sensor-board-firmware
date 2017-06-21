@@ -26,7 +26,7 @@ class EepromConfiguration
         // Checks if EEPROM is empty ro not.
         bool isEepromEmpty();
 
-	      // Erase data in EEPROM
+	    // Erase data in EEPROM
         void eraseEeprom();
 
         // Creates and returns valid default configuration
