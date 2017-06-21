@@ -1,73 +1,76 @@
 #include <ESP8266WiFi.h>
 
-#include "EEPROMConfiguration.h"
-#include "httpServer.h"
-#include "wifiManager.h"
+#include "EepromConfiguration.h"
+#include "HttpServer.h"
+#include "WifiManager.h"
+#include "resources.h"
 
 #define STATUS_LED 2
 
 WiFiServer server(AP_SERVER_PORT);
 
-EEPROMConfiguration *eepromConfig = new EEPROMConfiguration();
+EepromConfiguration* eepromConfig;
+HttpServer* httpServer;
+WifiManager* wifiManager;
+Configuration config;
+bool CONFIG_MODE = false;
 
 void setup()
 {
-  request_action[REQUEST_TYPE_SET_CONFIG] = "/set_config";
-  request_action[REQUEST_TYPE_RESTART] = "/restart";
+  eepromConfig = new EepromConfiguration();
+  httpServer = new HttpServer();
+  wifiManager = new WifiManager();
 
   Serial.begin(9600);
   while (!Serial) {
     ;
   }
 
-  EEPROM.begin(512);
   if (eepromConfig->isEepromEmpty())
   {
     eepromConfig->writeConfigurationToEeprom(eepromConfig->createDefaultConfiguration());
   }
+  config = eepromConfig->readConfigurationFromEeprom();
 
-  Configuration config = eepromConfig->readConfigurationFromEeprom();
-
-  if (!connectToWifi(config)) {
-    setupAccessPoint();
+  if (!wifiManager->connectToWifi(config)) {
+    wifiManager->setupAccessPoint();
   }
-
   server.begin();
 }
 
 void loop()
 {
-  Configuration config = eepromConfig->readConfigurationFromEeprom();
+  //ESP.deepSleep(config.sleepInterval * 60000, WAKE_RF_DEFAULT);
 
-  ESP.deepSleep(config.sleepInterval * 60000, WAKE_RF_DEFAULT);
-
-  WiFiClient client = server.available();
-  if (!client)
+  if (CONFIG_MODE)
   {
-    return;
-  }
+      WiFiClient client = server.available();
+      if (!client)
+      {
+          return;
+      }
 
-  while(!client.available())
-  {
-    delay(1);
-  }
+      while(!client.available())
+      {
+          delay(1);
+      }
 
-  String req = client.readStringUntil('\r');
-  Serial.println(req);
+      String req = client.readStringUntil('\r');
+      Serial.println(req);
 
   client.flush();
 
   String response = "";
-  int requestType = getRequestType(req);
+  int requestType = httpServer->getRequestType(req);
 
   if (requestType == REQUEST_TYPE_SET_CONFIG)
   {
-    String ssid = getRequestParameter(req, "ssid");
-    String password = getRequestParameter(req, "password");
-    String identifier = getRequestParameter(req, "identifier");
-    String sleepInterval = getRequestParameter(req, "sleepInterval");
-    String otaUrl = getRequestParameter(req, "otaUrl");
-    String otaUpdateInterval = getRequestParameter(req, "otaUpdateInterval");
+    String ssid = httpServer->getRequestParameter(req, "ssid");
+    String password = httpServer->getRequestParameter(req, "password");
+    String identifier = httpServer->getRequestParameter(req, "identifier");
+    String sleepInterval = httpServer->getRequestParameter(req, "sleepInterval");
+    String otaUrl = httpServer->getRequestParameter(req, "otaUrl");
+    String otaUpdateInterval = httpServer->getRequestParameter(req, "otaUpdateInterval");
     if (ssid.length() > 0)
     {
       struct Configuration config;
@@ -79,7 +82,7 @@ void loop()
       config.otaUpdateInterval = atoi(otaUpdateInterval.c_str());
       eepromConfig->writeConfigurationToEeprom(config);
     }
-    response = htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval);
+    response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval);
   }
   else if (requestType == REQUEST_TYPE_RESTART)
   {
@@ -88,9 +91,10 @@ void loop()
   }
   else
   {
-    response = htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval);
+    response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval);
   }
 
   client.print(response);
   delay(1);
+  }
 }

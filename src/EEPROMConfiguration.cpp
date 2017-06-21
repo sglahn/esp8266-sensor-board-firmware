@@ -1,8 +1,13 @@
 #include "EEPROMConfiguration.h"
 
-bool EEPROMConfiguration::isEepromEmpty()
+EepromConfiguration::EepromConfiguration()
 {
-    for(int i=eeStartAddress; i<512; i++)
+    EEPROM.begin(512);
+}
+
+bool EepromConfiguration::isEepromEmpty()
+{
+    for(int i=eeStartAddress; i<eeSize; i++)
     {
         int b = EEPROM.read(i);
         if (b != 255)
@@ -15,28 +20,28 @@ bool EEPROMConfiguration::isEepromEmpty()
     return true;
 }
 
-void EEPROMConfiguration::eraseEeprom() 
+void EepromConfiguration::eraseEeprom()
 {
-    for (int i=eeStartAddress; i<EEPROM.length(); i++) {
-        EEPROM.write(i, 0);
+    for (int i=eeStartAddress; i<eeSize; i++) {
+        EEPROM.write(i, 255);
     }
     EEPROM.commit();
 }
 
-Configuration EEPROMConfiguration::createDefaultConfiguration()
+Configuration EepromConfiguration::createDefaultConfiguration()
 {
     return Configuration
     {
-        "", 
-	"", 
-	"", 
-	0, 
-	"", 
-	0
+        "",
+	    "",
+        "",
+	    0,
+	    "",
+	    0
     };
 }
 
-Configuration EEPROMConfiguration::readConfigurationFromEeprom()
+Configuration EepromConfiguration::readConfigurationFromEeprom()
 {
     Configuration config;
     EEPROM.get(eeStartAddress, config);
@@ -50,9 +55,8 @@ Configuration EEPROMConfiguration::readConfigurationFromEeprom()
     return config;
 }
 
-void EEPROMConfiguration::writeConfigurationToEeprom(Configuration config)
+void EepromConfiguration::writeConfigurationToEeprom(Configuration config)
 {
     EEPROM.put(eeStartAddress, config);
     EEPROM.commit();
 }
-

@@ -14,17 +14,20 @@ struct Configuration
     int otaUpdateInterval; // Interval of checking for ota updates (hours)
 };
 
-class EEPROMConfiguration
+class EepromConfiguration
 {
     private:
         int eeStartAddress = 0;
+        int eeSize = 512;
 
     public:
+        EepromConfiguration();
+
         // Checks if EEPROM is empty ro not.
         bool isEepromEmpty();
-	
-	// Erase data in EEPROM
-	void eraseEeprom();
+
+	      // Erase data in EEPROM
+        void eraseEeprom();
 
         // Creates and returns valid default configuration
         Configuration createDefaultConfiguration();
