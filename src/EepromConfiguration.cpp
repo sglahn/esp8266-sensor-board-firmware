@@ -1,4 +1,4 @@
-#include "EEPROMConfiguration.h"
+#include "EepromConfiguration.h"
 
 EepromConfiguration::EepromConfiguration()
 {

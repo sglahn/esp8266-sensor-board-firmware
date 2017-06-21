@@ -4,6 +4,31 @@ HttpServer::HttpServer()
 {
     requestAction[REQUEST_TYPE_SET_CONFIG] = "/set_config";
     requestAction[REQUEST_TYPE_RESTART] = "/restart";
+    server = new WiFiServer(80);
+}
+
+void HttpServer::start()
+{
+    server->begin();
+}
+
+String HttpServer::handleRequest() {
+    client = server->available();
+    if (!client)
+    {
+        return "";
+    }
+    while(!client.available())
+    {
+        delay(1);
+    }
+    String request = client.readStringUntil('\r');
+    client.flush();
+    return request;
+}
+
+void HttpServer::sendResponse(String response) {
+    client.print(response);
 }
 
 String HttpServer::getRequestParameter(String request, String param)

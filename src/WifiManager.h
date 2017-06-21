@@ -4,7 +4,6 @@
 #include <ESP8266WiFi.h>
 #include "EEPROMConfiguration.h"
 
-#define AP_SERVER_PORT 80
 #define AP_PSK "password"
 
 class WifiManager
