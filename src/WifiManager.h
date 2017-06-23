@@ -4,8 +4,6 @@
 #include <ESP8266WiFi.h>
 #include "EepromConfiguration.h"
 
-#define AP_PSK "password"
-
 class WifiManager
 {
     public:
@@ -20,6 +18,8 @@ class WifiManager
         void setupAccessPoint();
 
     private:
+        char* apPassword;
+
         // Creates Access Point SSID, prefixed by ESP8266-, suffixed by the last parts of Mac Adress to get some uniqueness.
         String createSSID();
 };

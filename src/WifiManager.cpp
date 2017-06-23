@@ -2,6 +2,7 @@
 
 WifiManager::WifiManager()
 {
+    apPassword = "password";
 }
 
 bool WifiManager::connectToWifi(Configuration config)
@@ -13,7 +14,6 @@ bool WifiManager::connectToWifi(Configuration config)
     if (WiFi.status() == WL_CONNECTED)
     {
       Serial.println("WiFi connected.");
-      //blinkStatusLed();
       return true;
     }
     delay(i * 1000);
@@ -34,6 +34,6 @@ String WifiManager::createSSID()
 void WifiManager::setupAccessPoint()
 {
   WiFi.mode(WIFI_AP);
-  WiFi.softAP(createSSID().c_str(), AP_PSK);
+  WiFi.softAP(createSSID().c_str(), apPassword);
   Serial.println("Successfully set up access point.");
 }

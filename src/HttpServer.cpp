@@ -4,7 +4,7 @@ HttpServer::HttpServer()
 {
     requestAction[REQUEST_TYPE_SET_CONFIG] = "/set_config";
     requestAction[REQUEST_TYPE_RESTART] = "/restart";
-    server = new WiFiServer(80);
+    server = new WiFiServer(serverPort);
 }
 
 void HttpServer::start()
@@ -27,7 +27,8 @@ String HttpServer::handleRequest() {
     return request;
 }
 
-void HttpServer::sendResponse(String response) {
+void HttpServer::sendResponse(String response)
+{
     client.print(response);
 }
 

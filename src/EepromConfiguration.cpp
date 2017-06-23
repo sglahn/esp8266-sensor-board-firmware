@@ -22,7 +22,8 @@ bool EepromConfiguration::isEepromEmpty()
 
 void EepromConfiguration::eraseEeprom()
 {
-    for (int i=eeStartAddress; i<eeSize; i++) {
+    for (int i=eeStartAddress; i<eeSize; i++)
+    {
         EEPROM.write(i, 255);
     }
     EEPROM.commit();

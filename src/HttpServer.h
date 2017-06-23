@@ -14,6 +14,7 @@ class HttpServer
     private:
         String pageTitle = "ESP8266 Configuration";
         String requestAction[REQUEST_TYPES_SIZE];
+        int serverPort = 80;
         WiFiServer* server;
         WiFiClient client;
 
