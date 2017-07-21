@@ -1,6 +1,5 @@
 # ESP8266 Firmware
 [![Build Status](https://travis-ci.org/sglahn/esp8266-sensor-board-firmware.svg?branch=master)](https://travis-ci.org/sglahn/esp8266-sensor-board-firmware)
 
-## LAyout
-
-![doc/board.png]
+## The board
+![board][doc/board.png]
