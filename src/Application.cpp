@@ -4,11 +4,13 @@
 #include "HttpServer.h"
 #include "WifiManager.h"
 #include "resources.h"
+#include "Dht22Sensor.h"
 
 EepromConfiguration* eepromConfig;
 HttpServer* httpServer;
 WifiManager* wifiManager;
 Configuration config;
+Dht22Sensor* dht22Sensor;
 bool CONFIG_MODE = false;
 
 void setup()
@@ -16,12 +18,14 @@ void setup()
   eepromConfig = new EepromConfiguration();
   httpServer = new HttpServer();
   wifiManager = new WifiManager();
+  dht22Sensor = new Dht22Sensor(5);
 
   Serial.begin(9600);
   while (!Serial) {
     ;
   }
 
+  Serial.println("Booting...");
   if (eepromConfig->isEepromEmpty())
   {
     eepromConfig->writeConfigurationToEeprom(eepromConfig->createDefaultConfiguration());
@@ -36,10 +40,15 @@ void setup()
   }
 }
 
+void readSensor() {
+    Serial.println("Reading sensor data");
+    Dht22SensorResult result = dht22Sensor->readSensor();
+    Serial.println(String((float)result.temperature) + "C");
+    Serial.println(String((float)result.humidity) + "%");
+}
+
 void loop()
 {
-  //ESP.deepSleep(config.sleepInterval * 60000, WAKE_RF_DEFAULT);
-
   if (CONFIG_MODE)
   {
       String req = httpServer->handleRequest();
@@ -81,5 +90,21 @@ void loop()
       httpServer->sendResponse(response);
 
       delay(1);
+  }
+  else
+  {
+      readSensor();
+
+      int sleepTime = 2;//config.sleepInterval;
+      if (sleepTime > 0)
+      {
+          Serial.print("Sleeping  ");
+          Serial.print(sleepTime);
+          Serial.print(" Minutes");
+          ESP.deepSleep(sleepTime * 60000000, WAKE_RF_DEFAULT);
+      }
+      else {
+          delay(1000);
+      }
   }
 }
