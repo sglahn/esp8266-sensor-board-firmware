@@ -36,7 +36,7 @@ Configuration EepromConfiguration::createDefaultConfiguration()
         "",
 	    "",
         "",
-	    1,
+	    0,
 	    "",
 	    0
     };

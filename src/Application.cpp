@@ -95,7 +95,7 @@ void loop()
   {
       readSensor();
 
-      int sleepTime = 2;//config.sleepInterval;
+      int sleepTime = config.sleepInterval;
       if (sleepTime > 0)
       {
           Serial.print("Sleeping  ");
@@ -104,7 +104,7 @@ void loop()
           ESP.deepSleep(sleepTime * 60000000, WAKE_RF_DEFAULT);
       }
       else {
-          delay(1000);
+          delay(60 * 1000);
       }
   }
 }
