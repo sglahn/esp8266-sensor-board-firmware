@@ -12,6 +12,7 @@ struct Configuration
     int sleepInterval; // Deep Sleep interval (Minutes)
     char otaUrl[32]; // Url to download Over-the-Air firmware updates
     int otaUpdateInterval; // Interval of checking for ota updates (hours)
+    char thingspeakApiKey[17]; // API Key for Thingspeak.com
 };
 
 class EepromConfiguration

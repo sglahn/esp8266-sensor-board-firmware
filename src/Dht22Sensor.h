@@ -9,7 +9,8 @@
 struct Dht22SensorResult
 {
     float humidity; // in percent
-    float temperature; // in c
+    float temperature; // in celsius
+    int numberOfReadAttemps; // for debugging purposes
 };
 
 class Dht22Sensor
@@ -20,7 +21,7 @@ class Dht22Sensor
     public:
         Dht22Sensor(int pin);
 
-        Dht22SensorResult readSensor();
+        Dht22SensorResult read(int attemps = 0);
 };
 
 #endif

@@ -5,12 +5,14 @@
 #include "WifiManager.h"
 #include "resources.h"
 #include "Dht22Sensor.h"
+#include "ThingspeakClient.h"
 
 EepromConfiguration* eepromConfig;
 HttpServer* httpServer;
 WifiManager* wifiManager;
-Configuration config;
 Dht22Sensor* dht22Sensor;
+Configuration config;
+ThingspeakClient* thingspeak;
 bool CONFIG_MODE = false;
 
 void setup()
@@ -18,6 +20,7 @@ void setup()
   eepromConfig = new EepromConfiguration();
   httpServer = new HttpServer();
   wifiManager = new WifiManager();
+  thingspeak = new ThingspeakClient(config.thingspeakApiKey);
   dht22Sensor = new Dht22Sensor(5);
 
   Serial.begin(9600);
@@ -25,14 +28,13 @@ void setup()
     ;
   }
 
-  Serial.println("Booting...");
   if (eepromConfig->isEepromEmpty())
   {
     eepromConfig->writeConfigurationToEeprom(eepromConfig->createDefaultConfiguration());
   }
   config = eepromConfig->readConfigurationFromEeprom();
 
-  if (!wifiManager->connectToWifi(config))
+  //if (!wifiManager->connectToWifi(config))
   {
       CONFIG_MODE = true;
       wifiManager->setupAccessPoint();
@@ -40,11 +42,10 @@ void setup()
   }
 }
 
-void readSensor() {
-    Serial.println("Reading sensor data");
-    Dht22SensorResult result = dht22Sensor->readSensor();
-    Serial.println(String((float)result.temperature) + "C");
-    Serial.println(String((float)result.humidity) + "%");
+void process() {
+    Dht22SensorResult result = dht22Sensor->read(0);
+    thingspeak->sendData(result.temperature, result.humidity);
+    Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " to read DHT22");
 }
 
 void loop()
@@ -54,7 +55,7 @@ void loop()
       String req = httpServer->handleRequest();
       Serial.println(req);
 
-      String response = "";
+      String response;
       int requestType = httpServer->getRequestType(req);
 
       if (requestType == REQUEST_TYPE_SET_CONFIG)
@@ -76,7 +77,7 @@ void loop()
           config.otaUpdateInterval = atoi(otaUpdateInterval.c_str());
           eepromConfig->writeConfigurationToEeprom(config);
         }
-        response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval);
+        response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval, config.thingspeakApiKey);
       }
       else if (requestType == REQUEST_TYPE_RESTART)
       {
@@ -85,7 +86,7 @@ void loop()
       }
       else
       {
-        response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval);
+        response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval, config.thingspeakApiKey);
       }
       httpServer->sendResponse(response);
 
@@ -93,14 +94,12 @@ void loop()
   }
   else
   {
-      readSensor();
+      process();
 
       int sleepTime = config.sleepInterval;
       if (sleepTime > 0)
       {
-          Serial.print("Sleeping  ");
-          Serial.print(sleepTime);
-          Serial.print(" Minutes");
+          Serial.println("Sleeping for " + String((int)sleepTime) + " Minutes");
           ESP.deepSleep(sleepTime * 60000000, WAKE_RF_DEFAULT);
       }
       else {

@@ -38,7 +38,8 @@ Configuration EepromConfiguration::createDefaultConfiguration()
         "",
 	    0,
 	    "",
-	    0
+	    0,
+        "DW5IL9RO3KRCZ85X"
     };
 }
 
