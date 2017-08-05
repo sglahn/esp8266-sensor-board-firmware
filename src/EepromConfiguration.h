@@ -6,6 +6,7 @@
 
 struct Configuration
 {
+    char firmware[33]; // firmware version
     char ssid[33]; // WLAN ssid
     char password[33]; // WLAN password
     char identifier[33]; // Identifier of board

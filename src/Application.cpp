@@ -6,6 +6,11 @@
 #include "Dht22Sensor.h"
 #include "ThingspeakClient.h"
 
+#define TEXTIFY(A) #A
+#define ESCAPEQUOTE(A) TEXTIFY(A)
+
+String buildVersion = ESCAPEQUOTE(BUILD_VERSION);
+
 EepromConfiguration* eepromConfig;
 HttpServer* httpServer;
 WifiManager* wifiManager;
@@ -35,6 +40,15 @@ void saveConfigurationHandler()
     eepromConfig->writeConfigurationToEeprom(config);
 }
 
+String getFirmwareVersion()
+{
+    if (buildVersion.equals("BUILD_VERSION"))
+    {
+        buildVersion = "0.0.1";
+    }
+    return "ESP8266 Sensor v " + buildVersion;
+}
+
 void setup()
 {
     eepromConfig = new EepromConfiguration();
@@ -54,7 +68,9 @@ void setup()
 
     if (eepromConfig->isEepromEmpty())
     {
-        eepromConfig->writeConfigurationToEeprom(eepromConfig->createDefaultConfiguration());
+        Configuration defaultConfig = eepromConfig->createDefaultConfiguration();
+        strcpy(defaultConfig.firmware, getFirmwareVersion().c_str());
+        eepromConfig->writeConfigurationToEeprom(defaultConfig);
     }
     config = eepromConfig->readConfigurationFromEeprom();
 

@@ -34,6 +34,7 @@ Configuration EepromConfiguration::createDefaultConfiguration()
     return Configuration
     {
         "",
+        "",
 	    "",
         "",
 	    0,
@@ -47,6 +48,7 @@ Configuration EepromConfiguration::readConfigurationFromEeprom()
     Configuration config;
     EEPROM.get(eeStartAddress, config);
     Serial.println("Reading configuration from EEPROM:");
+    Serial.println(config.firmware);
     Serial.println(config.ssid);
     Serial.println(config.password);
     Serial.println(config.identifier);

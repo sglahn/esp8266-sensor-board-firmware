@@ -51,6 +51,8 @@
          position: absolute;
          margin-top:30px;
          margin-left: -260px;
+         -moz-border-radius: 7px;
+         -webkit-border-radius: 7px;
          }
          .data-input {
          color:#3c3c3c;
@@ -78,8 +80,18 @@
          font-weight:700;
          }
          .button-blue:hover, #pwd:hover {
-         background-color: rgba(0,0,0,0);
+         background-color: #99ddff;
          color: #0493bd;
+         }
+         .text {
+         background-color: #8c8c8c;
+         padding: 13px 13px 13px 24px;
+         font-size:18px;
+         -webkit-box-sizing: border-box;
+         -moz-box-sizing: border-box;
+         -ms-box-sizing: border-box;
+         box-sizing: border-box;
+         width:100%;
          }
    </style>
    </head>
@@ -87,6 +99,7 @@
    <body>
    <iframe name="hidden_frame" style="display:none"></iframe>
    <div id="form-div">
+   <p class="text">Firmware: <b>{{firmware}}</b></p>
    <form name="form" action="/set_config" method="get" target="hidden_frame">
    <p><input type="text" name="ssid" class="data-input" placeHolder="SSID" maxlength="32" required value="{{ssid}}"/></p>
    <p>

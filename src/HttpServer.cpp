@@ -25,6 +25,7 @@ void HttpServer::sendResponse(Configuration configuration)
     page += FPSTR(HTTP_SCRIPT);
     page += FPSTR(HTTP_STYLE);
     String body = FPSTR(HTTP_BODY);
+    body.replace("{{firmware}}", configuration.firmware);
     body.replace("{{ssid}}", configuration.ssid);
     body.replace("{{password}}", configuration.password);
     body.replace("{{identifier}}", configuration.identifier);
