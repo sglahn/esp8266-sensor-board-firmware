@@ -18,7 +18,8 @@ Dht22SensorResult Dht22Sensor::read(int attemps)
             delay(3000);
             return read(attemps +1);
         }
-        else {
+        else
+        {
             Serial.println("Giving up!");
             temperature = 0;
             humidity = 0;

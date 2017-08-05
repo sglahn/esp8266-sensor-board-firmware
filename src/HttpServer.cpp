@@ -1,6 +1,6 @@
 #include "HttpServer.h"
 
-HttpServer::HttpServer(Configuration* config)
+HttpServer::HttpServer()
 {
     server = new ESP8266WebServer(serverPort);
 }

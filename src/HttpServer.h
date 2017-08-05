@@ -18,7 +18,7 @@ class HttpServer
         typedef std::function<void(void)> HandlerFunction;
 
     public:
-        HttpServer(Configuration* config);
+        HttpServer();
 
         void start();
 

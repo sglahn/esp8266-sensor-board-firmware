@@ -3,7 +3,6 @@
 #include "EepromConfiguration.h"
 #include "HttpServer.h"
 #include "WifiManager.h"
-#include "resources.h"
 #include "Dht22Sensor.h"
 #include "ThingspeakClient.h"
 
@@ -38,36 +37,37 @@ void saveConfigurationHandler()
 
 void setup()
 {
-  eepromConfig = new EepromConfiguration();
-  wifiManager = new WifiManager();
-  thingspeak = new ThingspeakClient(config.thingspeakApiKey);
-  dht22Sensor = new Dht22Sensor(5);
+    eepromConfig = new EepromConfiguration();
+    wifiManager = new WifiManager();
+    thingspeak = new ThingspeakClient(config.thingspeakApiKey);
+    dht22Sensor = new Dht22Sensor(5);
+    httpServer = new HttpServer();
+    httpServer->addHandler("/", std::bind(&configurationPageHandler));
+    httpServer->addHandler("/restart", std::bind(&restartHandler));
+    httpServer->addHandler("/set_config", std::bind(&saveConfigurationHandler));
 
-  Serial.begin(9600);
-  while (!Serial) {
-    ;
-  }
+    Serial.begin(9600);
+    while (!Serial)
+    {
+        ;
+    }
 
-  if (eepromConfig->isEepromEmpty())
-  {
-    eepromConfig->writeConfigurationToEeprom(eepromConfig->createDefaultConfiguration());
-  }
-  config = eepromConfig->readConfigurationFromEeprom();
+    if (eepromConfig->isEepromEmpty())
+    {
+        eepromConfig->writeConfigurationToEeprom(eepromConfig->createDefaultConfiguration());
+    }
+    config = eepromConfig->readConfigurationFromEeprom();
 
-  httpServer = new HttpServer(&config);
-  httpServer->addHandler("/", std::bind(&configurationPageHandler));
-  httpServer->addHandler("/restart", std::bind(&restartHandler));
-  httpServer->addHandler("/set_config", std::bind(&saveConfigurationHandler));
-
-  if (!wifiManager->connectToWifi(config))
-  {
-      CONFIG_MODE = true;
-      wifiManager->setupAccessPoint();
-      httpServer->start();
-  }
+    if (!wifiManager->connectToWifi(config))
+    {
+        CONFIG_MODE = true;
+        wifiManager->setupAccessPoint();
+        httpServer->start();
+    }
 }
 
-void process() {
+void process()
+{
     Dht22SensorResult result = dht22Sensor->read(0);
     thingspeak->sendData(result.temperature, result.humidity);
     Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " to read DHT22");
@@ -75,22 +75,22 @@ void process() {
 
 void loop()
 {
-  if (CONFIG_MODE)
-  {
-      httpServer->handleRequest();
-  }
-  else
-  {
-      process();
+    if (CONFIG_MODE)
+    {
+        httpServer->handleRequest();
+    }
+    else
+    {
+        process();
 
-      int sleepTime = config.sleepInterval;
-      if (sleepTime > 0)
-      {
-          Serial.println("Sleeping for " + String((int)sleepTime) + " Minutes");
-          ESP.deepSleep(sleepTime * 60000000, WAKE_RF_DEFAULT);
-      }
-      else {
-          delay(60 * 1000);
-      }
-  }
+        int sleepTime = config.sleepInterval;
+        if (sleepTime > 0)
+        {
+            Serial.println("Sleeping for " + String((int)sleepTime) + " Minutes");
+            ESP.deepSleep(sleepTime * 60000000, WAKE_RF_DEFAULT);
+        }
+        else {
+            delay(60 * 1000);
+        }
+    }
 }
