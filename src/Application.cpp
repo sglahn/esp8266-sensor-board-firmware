@@ -15,10 +15,30 @@ Configuration config;
 ThingspeakClient* thingspeak;
 bool CONFIG_MODE = false;
 
+void restartHandler()
+{
+    ESP.restart();
+}
+
+void configurationPageHandler()
+{
+    httpServer->sendResponse(config);
+}
+
+void saveConfigurationHandler()
+{
+    strcpy(config.ssid, httpServer->getRequestArgument("ssid").c_str());
+    strcpy(config.password, httpServer->getRequestArgument("password").c_str());
+    strcpy(config.identifier, httpServer->getRequestArgument("identifier").c_str());
+    config.sleepInterval = atoi(httpServer->getRequestArgument("sleepInterval").c_str());
+    strcpy(config.thingspeakApiKey, httpServer->getRequestArgument("thingspeakKey").c_str());
+    strcpy(config.otaUrl, httpServer->getRequestArgument("otaUrl").c_str());
+    eepromConfig->writeConfigurationToEeprom(config);
+}
+
 void setup()
 {
   eepromConfig = new EepromConfiguration();
-  httpServer = new HttpServer();
   wifiManager = new WifiManager();
   thingspeak = new ThingspeakClient(config.thingspeakApiKey);
   dht22Sensor = new Dht22Sensor(5);
@@ -34,7 +54,12 @@ void setup()
   }
   config = eepromConfig->readConfigurationFromEeprom();
 
-  //if (!wifiManager->connectToWifi(config))
+  httpServer = new HttpServer(&config);
+  httpServer->addHandler("/", std::bind(&configurationPageHandler));
+  httpServer->addHandler("/restart", std::bind(&restartHandler));
+  httpServer->addHandler("/set_config", std::bind(&saveConfigurationHandler));
+
+  if (!wifiManager->connectToWifi(config))
   {
       CONFIG_MODE = true;
       wifiManager->setupAccessPoint();
@@ -52,45 +77,7 @@ void loop()
 {
   if (CONFIG_MODE)
   {
-      String req = httpServer->handleRequest();
-      Serial.println(req);
-
-      String response;
-      int requestType = httpServer->getRequestType(req);
-
-      if (requestType == REQUEST_TYPE_SET_CONFIG)
-      {
-        String ssid = httpServer->getRequestParameter(req, "ssid");
-        String password = httpServer->getRequestParameter(req, "password");
-        String identifier = httpServer->getRequestParameter(req, "identifier");
-        String sleepInterval = httpServer->getRequestParameter(req, "sleepInterval");
-        String otaUrl = httpServer->getRequestParameter(req, "otaUrl");
-        String otaUpdateInterval = httpServer->getRequestParameter(req, "otaUpdateInterval");
-        if (ssid.length() > 0)
-        {
-          struct Configuration config;
-          strcpy(config.ssid, ssid.c_str());
-          strcpy(config.password, password.c_str());
-          strcpy(config.identifier, identifier.c_str());
-          config.sleepInterval = atoi(sleepInterval.c_str());
-          strcpy(config.otaUrl, otaUrl.c_str());
-          config.otaUpdateInterval = atoi(otaUpdateInterval.c_str());
-          eepromConfig->writeConfigurationToEeprom(config);
-        }
-        response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval, config.thingspeakApiKey);
-      }
-      else if (requestType == REQUEST_TYPE_RESTART)
-      {
-        Serial.println("Restarting...");
-        ESP.restart();
-      }
-      else
-      {
-        response = httpServer->htmlHead() + htmlConfigurationForm(config.ssid, config.password, config.identifier, config.sleepInterval, config.otaUrl, config.otaUpdateInterval, config.thingspeakApiKey);
-      }
-      httpServer->sendResponse(response);
-
-      delay(1);
+      httpServer->handleRequest();
   }
   else
   {

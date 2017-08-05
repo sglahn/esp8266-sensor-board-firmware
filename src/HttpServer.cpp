@@ -1,10 +1,8 @@
 #include "HttpServer.h"
 
-HttpServer::HttpServer()
+HttpServer::HttpServer(Configuration* config)
 {
-    requestAction[REQUEST_TYPE_SET_CONFIG] = "/set_config";
-    requestAction[REQUEST_TYPE_RESTART] = "/restart";
-    server = new WiFiServer(serverPort);
+    server = new ESP8266WebServer(serverPort);
 }
 
 void HttpServer::start()
@@ -12,54 +10,35 @@ void HttpServer::start()
     server->begin();
 }
 
+void HttpServer::addHandler(String uri, HandlerFunction handler)
+{
+    server->on(uri.c_str(), handler);
+}
+
 String HttpServer::handleRequest() {
-    client = server->available();
-    if (!client)
-    {
-        return "";
-    }
-    while(!client.available())
-    {
-        delay(1);
-    }
-    String request = client.readStringUntil('\r');
-    client.flush();
-    return request;
+    server->handleClient();
 }
 
-void HttpServer::sendResponse(String response)
+void HttpServer::sendResponse(Configuration configuration)
 {
-    client.print(response);
+    String page = FPSTR(HTTP_HEAD);
+    page += FPSTR(HTTP_SCRIPT);
+    page += FPSTR(HTTP_STYLE);
+    String body = FPSTR(HTTP_BODY);
+    body.replace("{{ssid}}", configuration.ssid);
+    body.replace("{{password}}", configuration.password);
+    body.replace("{{identifier}}", configuration.identifier);
+    body.replace("{{sleepInterval}}", String((int)configuration.sleepInterval).c_str());
+    body.replace("{{thingspeakApiKey}}", configuration.thingspeakApiKey);
+    body.replace("{{otaUrl}}", configuration.otaUrl);
+    page += body;
+    page += FPSTR(HTTP_FOOT);
+
+    server->sendHeader("Content-Length", String(page.length()));
+    server->send(200, "text/html", page);
 }
 
-String HttpServer::getRequestParameter(String request, String param)
+String HttpServer::getRequestArgument(String name)
 {
-  request.replace(" HTTP/1.1", "");
-  int startIndex = request.indexOf(param) + param.length() +1;
-  if (startIndex != -1)
-  {
-    String value = request.substring(startIndex, request.length());
-    int andIndex = value.indexOf("&");
-    if (andIndex != -1)
-    {
-       return value.substring(0, andIndex);
-    }
-    return value;
-  }
-  return "";
-}
-
-int HttpServer::getRequestType(String request)
-{
-  for (int i=0; i<REQUEST_TYPES_SIZE; i++)
-  {
-    if (request.indexOf(requestAction[i]) != -1)
-      return i;
-  }
-  return -1;
-}
-
-String HttpServer::htmlHead()
-{
-  return "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>";
+    return server->arg(name);
 }

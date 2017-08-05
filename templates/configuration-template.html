@@ -13,15 +13,12 @@
          function sendData() {
          	var form = document.form;
          	var request  = new XMLHttpRequest();
-         	if (form.ssid.value == "" || form.identifier.value == "" || form.update == "") {
-         		return;
-         	}
          	var params = encodeURI(form.ssid.name + "=" + form.ssid.value + "&" +
          			form.password.name + "=" + form.password.value + "&" +
          			form.identifier.name + "=" + form.identifier.value + "&" +
          			form.sleepInterval.name + "=" + form.sleepInterval.value + "&" +
-         			form.otaUrl.name + "=" + form.otaUrl.value + "&" +
-         			form.otaUpdateInterval.name + "=" + form.otaUpdateInterval.value
+         			form.thingspeakKey.name + "=" + form.thingspeakKey.value + "&" +
+         			form.otaUrl.name + "=" + form.otaUrl.value
          	);
          	request.open("GET", "set_config" + "?" + params);
          	request.send("");
@@ -99,9 +96,8 @@
    </div>
    <p><input type="text" name="identifier" class="data-input" maxlength="32" placeHolder="Identifier" required value="{{identifier}}"/></p>
    <p><input type="number" name="sleepInterval" class="data-input" placeHolder="Sleep Interval" required max="9999" value="{{sleepInterval}}"/></p>
-   <p><input type="text" name="ThingspeakKey" class="data-input" maxlength="16" placeHolder="Thingspeak API Key"  value="{{thingspeakApiKey}}"/></p>
+   <p><input type="text" name="thingspeakKey" class="data-input" maxlength="16" placeHolder="Thingspeak API Key"  value="{{thingspeakApiKey}}"/></p>
    <p><input type="text" name="otaUrl" class="data-input" placeHolder="OTA URL" maxlength="32" value="{{otaUrl}}"/></p>
-   <p><input type="number" name="otaUpdateInterval" class="data-input" placeHolder="OTA Interval" min="0" max="9999" value="{{otaUpdateInterval}}"/></p>
    <div class="submit">
    <input type="button" value="Update" onClick="sendData();" class="button-blue">
    <input type="button" value="Restart ESP8266" onClick="restart();" class="button-blue">

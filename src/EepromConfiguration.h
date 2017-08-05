@@ -6,12 +6,11 @@
 
 struct Configuration
 {
-    char ssid[32]; // WLAN ssid
-    char password[32]; // WLAN password
-    char identifier[32]; // Identifier of board
+    char ssid[33]; // WLAN ssid
+    char password[33]; // WLAN password
+    char identifier[33]; // Identifier of board
     int sleepInterval; // Deep Sleep interval (Minutes)
-    char otaUrl[32]; // Url to download Over-the-Air firmware updates
-    int otaUpdateInterval; // Interval of checking for ota updates (hours)
+    char otaUrl[33]; // Url to download Over-the-Air firmware updates
     char thingspeakApiKey[17]; // API Key for Thingspeak.com
 };
 

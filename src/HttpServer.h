@@ -3,38 +3,32 @@
 
 #include "WString.h"
 #include <ESP8266WiFi.h>
-
-#define REQUEST_TYPE_SET_CONFIG 0
-#define REQUEST_TYPE_RESTART 1
-#define REQUEST_TYPES_SIZE 2
-//#define AP_SERVER_PORT 80
+#include "EepromConfiguration.h"
+#include "ConfigurationTemplate.h"
+#include <ESP8266WebServer.h>
 
 class HttpServer
 {
     private:
-        String pageTitle = "ESP8266 Configuration";
-        String requestAction[REQUEST_TYPES_SIZE];
         int serverPort = 80;
-        WiFiServer* server;
+        ESP8266WebServer* server;
         WiFiClient client;
 
     public:
-        HttpServer();
+        typedef std::function<void(void)> HandlerFunction;
+
+    public:
+        HttpServer(Configuration* config);
 
         void start();
 
         String handleRequest();
 
-        void sendResponse(String response);
+        void sendResponse(Configuration configuration);
 
-        // Parses the request for given param name.
-        // Returns the paramter value if availabe, otherwise emtpy string.
-        String getRequestParameter(String request, String param);
+        void addHandler(String uri, HandlerFunction handler);
 
-        // Parses the request and eturns the request type
-        int getRequestType(String request);
-
-        String htmlHead();
+        String getRequestArgument(String name);
 };
 
 #endif
