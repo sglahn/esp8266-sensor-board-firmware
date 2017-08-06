@@ -44,7 +44,7 @@ String getFirmwareVersion()
 {
     if (buildVersion.equals("BUILD_VERSION"))
     {
-        buildVersion = "0.0.1";
+        buildVersion = "0.1";
     }
     return "ESP8266 Sensor v " + buildVersion;
 }
@@ -53,7 +53,6 @@ void setup()
 {
     eepromConfig = new EepromConfiguration();
     wifiManager = new WifiManager();
-    thingspeak = new ThingspeakClient(config.thingspeakApiKey);
     dht22Sensor = new Dht22Sensor(5);
     httpServer = new HttpServer();
     httpServer->addHandler("/", std::bind(&configurationPageHandler));
@@ -74,6 +73,8 @@ void setup()
     }
     config = eepromConfig->readConfigurationFromEeprom();
 
+    thingspeak = new ThingspeakClient(config.thingspeakApiKey);
+
     if (!wifiManager->connectToWifi(config))
     {
         CONFIG_MODE = true;
@@ -84,9 +85,18 @@ void setup()
 
 void process()
 {
-    Dht22SensorResult result = dht22Sensor->read(0);
-    thingspeak->sendData(result.temperature, result.humidity);
-    Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " to read DHT22");
+    int maxReads = 20;
+    Dht22SensorResult result = dht22Sensor->read(maxReads);
+    if (result.temperature != -1 && result.humidity != -1)
+    {
+        String data[] = { buildVersion,
+            config.identifier,
+            String((float)result.temperature),
+            String((float)result.humidity),
+            String((int)result.numberOfReadAttemps) };
+        thingspeak->sendData(data, 5);
+    }
+    Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " attemps to read DHT22");
 }
 
 void loop()

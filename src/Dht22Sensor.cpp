@@ -5,24 +5,24 @@ Dht22Sensor::Dht22Sensor(int pin)
     dht = new DHT(pin, DHTTYPE, 15);
 }
 
-Dht22SensorResult Dht22Sensor::read(int attemps)
+Dht22SensorResult Dht22Sensor::read(int maxNumberAttemps, int attemps)
 {
     float humidity = dht->readHumidity();
     float temperature = dht->readTemperature(false);
 
     if (isnan(humidity) || isnan(temperature))
     {
-        Serial.println("Failed to read from DHT sensor!");
-        if (attemps < 20)
+        Serial.println(String((int)attemps +1) + " reads from DHT sensor failed!");
+        if (attemps < maxNumberAttemps)
         {
             delay(3000);
-            return read(attemps +1);
+            return read(maxNumberAttemps, attemps +1);
         }
         else
         {
             Serial.println("Giving up!");
-            temperature = 0;
-            humidity = 0;
+            temperature = -1;
+            humidity = -1;
         }
     }
     Serial.println("DHT22: " + String((float)temperature) + "C");

@@ -21,7 +21,7 @@ class Dht22Sensor
     public:
         Dht22Sensor(int pin);
 
-        Dht22SensorResult read(int attemps = 0);
+        Dht22SensorResult read(int maxNumberAttemps = 3, int attemps = 1);
 };
 
 #endif
