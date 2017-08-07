@@ -6,10 +6,10 @@
 
 struct Configuration
 {
-    char firmware[33]; // firmware version
+    char firmware[21]; // firmware version
     char ssid[33]; // WLAN ssid
     char password[33]; // WLAN password
-    char identifier[33]; // Identifier of board
+    char identifier[11]; // Identifier of board
     int sleepInterval; // Deep Sleep interval (Minutes)
     char otaUrl[33]; // Url to download Over-the-Air firmware updates
     char thingspeakApiKey[17]; // API Key for Thingspeak.com

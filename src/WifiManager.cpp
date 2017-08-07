@@ -9,6 +9,13 @@ WifiManager::WifiManager()
 bool WifiManager::connectToWifi(Configuration config)
 {
     Serial.println("Connecting to WLAN");
+    if (strlen(config.ssid) == 0) {
+        Serial.println("ERROR: No SSID given.");
+        return false;
+    }
+
+    //WiFi.persistent(false);
+    //WiFi.disconnect(true);
     WiFi.begin(config.ssid, config.password);
     for (int i=0; i<10; i++)
     {

@@ -46,7 +46,7 @@ String getFirmwareVersion()
     {
         buildVersion = "0.1";
     }
-    return "ESP8266 Sensor v " + buildVersion;
+    return buildVersion;
 }
 
 void setup()
@@ -104,6 +104,7 @@ void loop()
     if (CONFIG_MODE)
     {
         httpServer->handleRequest();
+        delay(500);
     }
     else
     {

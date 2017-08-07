@@ -15,7 +15,7 @@ Dht22SensorResult Dht22Sensor::read(int maxNumberAttemps, int attemps)
         Serial.println(String((int)attemps +1) + " reads from DHT sensor failed!");
         if (attemps < maxNumberAttemps)
         {
-            delay(3000);
+            delay(500);
             return read(maxNumberAttemps, attemps +1);
         }
         else
