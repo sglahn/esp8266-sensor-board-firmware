@@ -53,7 +53,7 @@ void setup()
 {
     eepromConfig = new EepromConfiguration();
     wifiManager = new WifiManager();
-    dht22Sensor = new Dht22Sensor(5);
+    dht22Sensor = new Dht22Sensor(4);
     httpServer = new HttpServer();
     httpServer->addHandler("/", std::bind(&configurationPageHandler));
     httpServer->addHandler("/restart", std::bind(&restartHandler));
@@ -89,7 +89,7 @@ void process()
     Dht22SensorResult result = dht22Sensor->read(maxReads);
     if (result.temperature != -1 && result.humidity != -1)
     {
-        String data[] = { buildVersion,
+        String data[] = { getFirmwareVersion(),
             config.identifier,
             String((float)result.temperature),
             String((float)result.humidity),
