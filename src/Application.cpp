@@ -40,6 +40,11 @@ void saveConfigurationHandler()
     eepromConfig->writeConfigurationToEeprom(config);
 }
 
+void sensorDataHandler()
+{
+    httpServer->sendResponse(dht22Sensor->read(1));
+}
+
 String getFirmwareVersion()
 {
     if (buildVersion.equals("BUILD_VERSION"))
@@ -58,6 +63,7 @@ void setup()
     httpServer->addHandler("/", std::bind(&configurationPageHandler));
     httpServer->addHandler("/restart", std::bind(&restartHandler));
     httpServer->addHandler("/set_config", std::bind(&saveConfigurationHandler));
+    httpServer->addHandler("/data", std::bind(&sensorDataHandler));
 
     Serial.begin(9600);
     while (!Serial)

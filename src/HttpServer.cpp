@@ -39,6 +39,14 @@ void HttpServer::sendResponse(Configuration configuration)
     server->send(200, "text/html", page);
 }
 
+void HttpServer::sendResponse(Dht22SensorResult sensorResult)
+{
+    String page = "{ \"Temperature\": \"" + String((float)sensorResult.temperature) + "\","
+        + "\"Humidity\":" + "\"" + String((float)sensorResult.humidity) + "\"}";
+    server->sendHeader("Content-Length", String(page.length()));
+    server->send(200, "text/html", page);
+}
+
 String HttpServer::getRequestArgument(String name)
 {
     return server->arg(name);

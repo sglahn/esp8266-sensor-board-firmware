@@ -4,6 +4,7 @@
 #include "WString.h"
 #include <ESP8266WiFi.h>
 #include "EepromConfiguration.h"
+#include "Dht22Sensor.h"
 #include "ConfigurationTemplate.h"
 #include <ESP8266WebServer.h>
 
@@ -25,6 +26,8 @@ class HttpServer
         String handleRequest();
 
         void sendResponse(Configuration configuration);
+
+        void sendResponse(Dht22SensorResult sensorResult);
 
         void addHandler(String uri, HandlerFunction handler);
 
