@@ -18,13 +18,13 @@ struct Configuration
 class EepromConfiguration
 {
     private:
-        int eeStartAddress = 0;
-        int eeSize = 512;
+        int eeStartAddress;
+        int eeSize;
 
     public:
-        EepromConfiguration();
+        EepromConfiguration(int size);
 
-        // Checks if EEPROM is empty ro not.
+        // Checks if EEPROM is empty or not.
         bool isEepromEmpty();
 
 	    // Erase data in EEPROM

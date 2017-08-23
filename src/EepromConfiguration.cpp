@@ -1,8 +1,10 @@
 #include "EepromConfiguration.h"
 
-EepromConfiguration::EepromConfiguration()
+EepromConfiguration::EepromConfiguration(int size)
 {
-    EEPROM.begin(512);
+    eeStartAddress = 0;
+    eeSize = size;
+    EEPROM.begin(eeSize);
 }
 
 bool EepromConfiguration::isEepromEmpty()

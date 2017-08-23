@@ -56,7 +56,7 @@ String getFirmwareVersion()
 
 void setup()
 {
-    eepromConfig = new EepromConfiguration();
+    eepromConfig = new EepromConfiguration(4096);
     wifiManager = new WifiManager();
     dht22Sensor = new Dht22Sensor(4);
     httpServer = new HttpServer();
