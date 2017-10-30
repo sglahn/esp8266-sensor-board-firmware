@@ -14,8 +14,8 @@ bool WifiManager::connectToWifi(Configuration config)
         return false;
     }
 
-    //WiFi.persistent(false);
-    //WiFi.disconnect(true);
+    WiFi.persistent(false);
+    WiFi.disconnect(true);
     WiFi.begin(config.ssid, config.password);
     for (int i=0; i<10; i++)
     {
@@ -42,6 +42,7 @@ String WifiManager::createSSID()
 void WifiManager::setupAccessPoint()
 {
     WiFi.mode(WIFI_AP);
-    WiFi.softAP(createSSID().c_str(), apPassword);
-    Serial.println("Successfully set up access point.");
+    String ssid = createSSID();
+    WiFi.softAP(ssid.c_str(), apPassword);
+    Serial.println("Successfully set up access point. SSID: " + ssid);
 }

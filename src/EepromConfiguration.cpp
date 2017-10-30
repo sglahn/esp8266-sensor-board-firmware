@@ -4,11 +4,12 @@ EepromConfiguration::EepromConfiguration(int size)
 {
     eeStartAddress = 0;
     eeSize = size;
-    EEPROM.begin(eeSize);
 }
 
 bool EepromConfiguration::isEepromEmpty()
 {
+    EEPROM.begin(eeSize);
+    delay(10);
     for(int i=eeStartAddress; i<eeSize; i++)
     {
         int b = EEPROM.read(i);
@@ -18,17 +19,21 @@ bool EepromConfiguration::isEepromEmpty()
             return false;
         }
     }
+    EEPROM.end();
     Serial.println("EEPROM is empty");
     return true;
 }
 
 void EepromConfiguration::eraseEeprom()
 {
+    EEPROM.begin(eeSize);
+    delay(10);
     for (int i=eeStartAddress; i<eeSize; i++)
     {
         EEPROM.write(i, 255);
     }
     EEPROM.commit();
+    EEPROM.end();
 }
 
 Configuration EepromConfiguration::createDefaultConfiguration()
@@ -48,7 +53,10 @@ Configuration EepromConfiguration::createDefaultConfiguration()
 Configuration EepromConfiguration::readConfigurationFromEeprom()
 {
     Configuration config;
+    EEPROM.begin(eeSize);
+    delay(10);
     EEPROM.get(eeStartAddress, config);
+    EEPROM.end();
     Serial.println("Reading configuration from EEPROM:");
     Serial.println(config.firmware);
     Serial.println(config.ssid);
@@ -62,6 +70,10 @@ Configuration EepromConfiguration::readConfigurationFromEeprom()
 
 void EepromConfiguration::writeConfigurationToEeprom(Configuration config)
 {
+    Serial.println("Writing " + String((int)sizeof(config)) + "bytes to EEPROM.");
+    EEPROM.begin(eeSize);
+    delay(10);
     EEPROM.put(eeStartAddress, config);
     EEPROM.commit();
+    EEPROM.end();
 }

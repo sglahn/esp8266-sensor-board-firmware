@@ -47,6 +47,12 @@ void HttpServer::sendResponse(Dht22SensorResult sensorResult)
     server->send(200, "text/html", page);
 }
 
+void HttpServer::sendResponse(String message)
+{
+    server->sendHeader("Content-Length", String(message.length()));
+    server->send(200, "text/html", message);
+}
+
 String HttpServer::getRequestArgument(String name)
 {
     return server->arg(name);

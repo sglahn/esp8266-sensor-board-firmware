@@ -21,16 +21,20 @@ bool CONFIG_MODE = false;
 
 void restartHandler()
 {
+    Serial.println("Restarting..");
+    httpServer->sendResponse("Restarting...");
     ESP.restart();
 }
 
 void configurationPageHandler()
 {
+    Serial.println("Delivering configuration page.");
     httpServer->sendResponse(config);
 }
 
 void saveConfigurationHandler()
 {
+    Serial.println("Updating configuration.");
     strcpy(config.ssid, httpServer->getRequestArgument("ssid").c_str());
     strcpy(config.password, httpServer->getRequestArgument("password").c_str());
     strcpy(config.identifier, httpServer->getRequestArgument("identifier").c_str());
@@ -38,16 +42,18 @@ void saveConfigurationHandler()
     strcpy(config.thingspeakApiKey, httpServer->getRequestArgument("thingspeakKey").c_str());
     strcpy(config.otaUrl, httpServer->getRequestArgument("otaUrl").c_str());
     eepromConfig->writeConfigurationToEeprom(config);
+    httpServer->sendResponse(config);
 }
 
 void sensorDataHandler()
 {
+    Serial.println("Reading sensor.");
     httpServer->sendResponse(dht22Sensor->read(1));
 }
 
 String getFirmwareVersion()
 {
-    if (buildVersion.equals("BUILD_VERSION"))
+    //if (buildVersion.equals("BUILD_VERSION"))
     {
         buildVersion = "0.1";
     }
@@ -56,7 +62,7 @@ String getFirmwareVersion()
 
 void setup()
 {
-    eepromConfig = new EepromConfiguration(4096);
+    eepromConfig = new EepromConfiguration(512);
     wifiManager = new WifiManager();
     dht22Sensor = new Dht22Sensor(4);
     httpServer = new HttpServer();
@@ -78,9 +84,7 @@ void setup()
         eepromConfig->writeConfigurationToEeprom(defaultConfig);
     }
     config = eepromConfig->readConfigurationFromEeprom();
-
     thingspeak = new ThingspeakClient(config.thingspeakApiKey);
-
     if (!wifiManager->connectToWifi(config))
     {
         CONFIG_MODE = true;
@@ -91,7 +95,7 @@ void setup()
 
 void process()
 {
-    int maxReads = 20;
+    int maxReads = 3;
     Dht22SensorResult result = dht22Sensor->read(maxReads);
     if (result.temperature != -1 && result.humidity != -1)
     {
@@ -110,7 +114,7 @@ void loop()
     if (CONFIG_MODE)
     {
         httpServer->handleRequest();
-        delay(500);
+        delay(1000);
     }
     else
     {

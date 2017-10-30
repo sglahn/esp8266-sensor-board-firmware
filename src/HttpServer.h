@@ -29,6 +29,8 @@ class HttpServer
 
         void sendResponse(Dht22SensorResult sensorResult);
 
+        void sendResponse(String message);
+
         void addHandler(String uri, HandlerFunction handler);
 
         String getRequestArgument(String name);
