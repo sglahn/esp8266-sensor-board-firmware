@@ -6,6 +6,9 @@
 #include "Dht22Sensor.h"
 #include "ThingspeakClient.h"
 
+// To read VCC
+ADC_MODE(ADC_VCC);
+
 #define TEXTIFY(A) #A
 #define ESCAPEQUOTE(A) TEXTIFY(A)
 
@@ -55,6 +58,15 @@ void sensorDataHandler()
     httpServer->sendResponse(dht22Sensor->read(1));
 }
 
+void systemInfoHandler()
+{
+    Serial.println("Delivering system data");
+    httpServer->sendResponse("{ \"VCC\": \"" + String(ESP.getVcc()) + "\", " +
+        "\"SDK Version\": \"" + String(ESP.getSdkVersion()) + "\", " +
+        "\"Free Heap\": \"" + String(ESP.getFreeHeap()) + "\", " +
+        "\"CPU Frequency\": \"" + String(ESP.getCpuFreqMHz()) + "\"}");
+}
+
 String getFirmwareVersion()
 {
     //if (buildVersion.equals("BUILD_VERSION"))
@@ -74,6 +86,7 @@ void setup()
     httpServer->addHandler("/restart", std::bind(&restartHandler));
     httpServer->addHandler("/set_config", std::bind(&saveConfigurationHandler));
     httpServer->addHandler("/data", std::bind(&sensorDataHandler));
+    httpServer->addHandler("/info", std::bind(&systemInfoHandler));
 
     Serial.begin(SERIAL_BAUD_RATE);
     while (!Serial)
@@ -88,8 +101,8 @@ void setup()
     Serial.println("Firmware Version: " + getFirmwareVersion());
     Serial.println("Reset Reason: " + ESP.getResetReason());
 
-    // Reset triggert by manual push of reset button?
-    bool manual_config_mode = ESP.getResetReason().equals("External System");
+    // Reset triggerd by manual push of reset button?
+    CONFIG_MODE = ESP.getResetReason().equals("External System");
 
     if (eepromConfig->isEepromEmpty())
     {
@@ -99,7 +112,7 @@ void setup()
     }
     config = eepromConfig->readConfigurationFromEeprom();
     thingspeak = new ThingspeakClient(config.thingspeakApiKey);
-    if (manual_config_mode || !wifiManager->connectToWifi(config))
+    if (CONFIG_MODE || !wifiManager->connectToWifi(config))
     {
         CONFIG_MODE = true;
         wifiManager->setupAccessPoint();
@@ -111,7 +124,7 @@ void process()
 {
     int maxReads = 3;
     Dht22SensorResult result = dht22Sensor->read(maxReads);
-    //if (result.temperature != -1 && result.humidity != -1)
+    if (result.temperature != -1 && result.humidity != -1)
     {
         String data[] = { getFirmwareVersion(),
             config.identifier,
