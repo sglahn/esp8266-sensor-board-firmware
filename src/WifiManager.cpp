@@ -30,6 +30,10 @@ bool WifiManager::connectToWifi(Configuration config)
     return false;
 }
 
+void WifiManager::disconnect() {
+    WiFi.disconnect();
+}
+
 String WifiManager::createSSID()
 {
     uint8_t mac[WL_MAC_ADDR_LENGTH];

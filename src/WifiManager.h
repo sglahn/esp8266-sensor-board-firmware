@@ -14,6 +14,8 @@ class WifiManager
         // Returns true if connection was successful
         bool connectToWifi(Configuration config);
 
+        void disconnect();
+
         // Creates an access point.
         void setupAccessPoint();
 
