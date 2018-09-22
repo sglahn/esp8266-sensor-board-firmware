@@ -17,9 +17,10 @@ class Dht22Sensor
 {
     private:
         DHT* dht;
+        int powerPin;
 
     public:
-        Dht22Sensor(int pin);
+        Dht22Sensor(int dataPin, int powerPin);
 
         Dht22SensorResult read(int maxNumberAttemps = 3, int attemps = 1);
 };

@@ -2,8 +2,9 @@
 <!DOCTYPE html>
 <html>
    <head lang="en">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>ESP8266 Configuration Interface</title>
-<!-- SCRIPT -->      
+<!-- SCRIPT -->
       <script>
          function restart() {
          	var request  = new XMLHttpRequest();
@@ -37,34 +38,34 @@
              ;
          }
       </script>
-<!-- STYLE -->      
+<!-- STYLE -->
       <style>
+         body {
+             margin: 0;
+             padding: 0;
+         }
          #form-div {
          background-color:rgba(72,72,72,0.4);
-         padding-left:35px;
-         padding-right:35px;
-         padding-top:35px;
-         padding-bottom:50px;
-         width: 450px;
+         padding-left:10px;
+         padding-right:10px;
+         padding-bottom:20px;
          float: left;
-         left: 50%;
-         position: absolute;
-         margin-top:30px;
-         margin-left: -260px;
          -moz-border-radius: 7px;
          -webkit-border-radius: 7px;
          }
          .data-input {
          color:#3c3c3c;
          background-color: #fbfbfb;
-         padding: 13px 13px 13px 24px;
-         font-size:24px;
+         padding: 5px 5px 5px 24px;
+         font-size:20px;
          width:100%;
          -webkit-box-sizing: border-box;
          -moz-box-sizing: border-box;
          -ms-box-sizing: border-box;
          box-sizing: border-box;
          border: 3px solid rgba(0,0,0,0);
+         -moz-border-radius: 7px;
+         -webkit-border-radius: 7px;
          }
          .button-blue, #pwd {
          float:left;
@@ -73,25 +74,23 @@
          cursor:pointer;
          background-color: #3498db;
          color:white;
-         font-size:24px;
-         padding-top:16px;
-         padding-bottom:16px;
-         margin-top:-4px;
+         font-size:20px;
+         padding-top:5px;
+         padding-bottom:5px;
          font-weight:700;
+         -moz-border-radius: 7px;
+         -webkit-border-radius: 7px;
          }
          .button-blue:hover, #pwd:hover {
          background-color: #99ddff;
          color: #0493bd;
          }
          .text {
-         background-color: #8c8c8c;
-         padding: 13px 13px 13px 24px;
-         font-size:18px;
-         -webkit-box-sizing: border-box;
-         -moz-box-sizing: border-box;
-         -ms-box-sizing: border-box;
-         box-sizing: border-box;
-         width:100%;
+         padding: 5px 5px 5px 5px;
+         font-size:16px;
+         color: grey;
+         float:left;
+         clear:both;
          }
    </style>
    </head>
@@ -99,10 +98,8 @@
    <body>
    <iframe name="hidden_frame" style="display:none"></iframe>
    <div id="form-div">
-   <p class="text">Firmware: <b>{{firmware}}</b></p>
    <form name="form" action="/set_config" method="get" target="hidden_frame">
    <p><input type="text" name="ssid" class="data-input" placeHolder="SSID" maxlength="32" required value="{{ssid}}"/></p>
-   <p>
    <div class="submit">
    <input type="password" id="password" name="password" class="data-input" maxlength="32" placeHolder="Password" value="{{password}}" style="width:75%"/>
    <input type="button" class="pwd-button" id="pwd" onClick="showPassword();" title="Show/hide password" value="abc" style="width:20%;float:right"/>
@@ -117,7 +114,8 @@
    </div>
    </form>
    </div>
-<!-- FOOT -->   
+   <div class="text">{{firmware}}</div>
+<!-- FOOT -->
    </body>
 </html>
 <!-- END -->

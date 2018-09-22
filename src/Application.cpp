@@ -12,9 +12,11 @@ ADC_MODE(ADC_VCC);
 #define TEXTIFY(A) #A
 #define ESCAPEQUOTE(A) TEXTIFY(A)
 
-#define SENSOR_PIN 4
+#define SENSOR_PIN 13
+#define SENSOR_POWER_PIN 12
+#define CONFIG_INDICATOR_LED_PIN 5
 #define EEPROM_SIZE 512
-#define SERIAL_BAUD_RATE 9600
+#define SERIAL_BAUD_RATE 115200
 
 String buildVersion = ESCAPEQUOTE(BUILD_VERSION);
 
@@ -24,7 +26,8 @@ WifiManager* wifiManager;
 Dht22Sensor* dht22Sensor;
 Configuration config;
 ThingspeakClient* thingspeak;
-bool CONFIG_MODE = false;
+bool CONFIG_MODE = true;
+bool DEBUG_MODE = false;
 
 void restartHandler()
 {
@@ -55,7 +58,7 @@ void saveConfigurationHandler()
 void sensorDataHandler()
 {
     Serial.println("Reading sensor.");
-    httpServer->sendResponse(dht22Sensor->read(1));
+    httpServer->sendResponse(dht22Sensor->read(2));
 }
 
 void systemInfoHandler()
@@ -64,12 +67,12 @@ void systemInfoHandler()
     httpServer->sendResponse("{ \"VCC\": \"" + String(ESP.getVcc()) + "\", " +
         "\"SDK Version\": \"" + String(ESP.getSdkVersion()) + "\", " +
         "\"Free Heap\": \"" + String(ESP.getFreeHeap()) + "\", " +
-        "\"CPU Frequency\": \"" + String(ESP.getCpuFreqMHz()) + "\"}");
+        "\"Reset Reason\": \"" + String(ESP.getResetReason()) + "\"}");
 }
 
 String getFirmwareVersion()
 {
-    //if (buildVersion.equals("BUILD_VERSION"))
+    if (buildVersion.equals("BUILD_VERSION"))
     {
         buildVersion = "0.1";
     }
@@ -78,28 +81,36 @@ String getFirmwareVersion()
 
 void setup()
 {
-    eepromConfig = new EepromConfiguration(EEPROM_SIZE);
-    wifiManager = new WifiManager();
-    dht22Sensor = new Dht22Sensor(SENSOR_PIN);
-    httpServer = new HttpServer();
-    httpServer->addHandler("/", std::bind(&configurationPageHandler));
-    httpServer->addHandler("/restart", std::bind(&restartHandler));
-    httpServer->addHandler("/set_config", std::bind(&saveConfigurationHandler));
-    httpServer->addHandler("/data", std::bind(&sensorDataHandler));
-    httpServer->addHandler("/info", std::bind(&systemInfoHandler));
+    pinMode(CONFIG_INDICATOR_LED_PIN, OUTPUT);
+    pinMode(SENSOR_POWER_PIN, OUTPUT);
+    pinMode(SENSOR_PIN, INPUT);
+
+    digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
+    delay(500);
+    digitalWrite(CONFIG_INDICATOR_LED_PIN, LOW);
 
     Serial.begin(SERIAL_BAUD_RATE);
     while (!Serial)
     {
         ;
     }
-    Serial.println("");
-    Serial.println(" ____  ____  ____    ____  ____  __ _  ____   __  ____    ____   __    __   ____  ____");
-    Serial.println("(  __)/ ___)(  _ \  / ___)(  __)(  ( \/ ___) /  \(  _ \  (  _ \ /  \  / _\ (  _ \(    \\");
-    Serial.println(" ) _) \___ \ ) __/  \___ \ ) _) /    /\___ \(  O ))   /   ) _ ((  O )/    \ )   / ) D ( ");
-    Serial.println("(____)(____/(__)    (____/(____)\_)__)(____/ \__/(__\_)  (____/ \__/ \_/\_/(__\_)(____/");
+
+    Serial.println("-----------");
+    Serial.println("ESP Sensor Board");
+    Serial.println("-----------");
     Serial.println("Firmware Version: " + getFirmwareVersion());
     Serial.println("Reset Reason: " + ESP.getResetReason());
+    delay(2000);
+
+    eepromConfig = new EepromConfiguration(EEPROM_SIZE);
+    wifiManager = new WifiManager();
+    dht22Sensor = new Dht22Sensor(SENSOR_PIN, SENSOR_POWER_PIN);
+    httpServer = new HttpServer();
+    httpServer->addHandler("/", std::bind(&configurationPageHandler));
+    httpServer->addHandler("/restart", std::bind(&restartHandler));
+    httpServer->addHandler("/set_config", std::bind(&saveConfigurationHandler));
+    httpServer->addHandler("/data", std::bind(&sensorDataHandler));
+    httpServer->addHandler("/info", std::bind(&systemInfoHandler));
 
     // Reset triggerd by manual push of reset button?
     CONFIG_MODE = ESP.getResetReason().equals("External System");
@@ -112,8 +123,13 @@ void setup()
     }
     config = eepromConfig->readConfigurationFromEeprom();
     thingspeak = new ThingspeakClient(config.thingspeakApiKey);
-    if (CONFIG_MODE || !wifiManager->connectToWifi(config))
+    if (DEBUG_MODE)
     {
+        Serial.println("Booting in DEBUG_MODE");
+    }
+    else if (CONFIG_MODE || !wifiManager->connectToWifi(config))
+    {
+        digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
         CONFIG_MODE = true;
         wifiManager->setupAccessPoint();
         httpServer->start();
@@ -138,7 +154,17 @@ void process()
 
 void loop()
 {
-    if (CONFIG_MODE)
+    if (DEBUG_MODE)
+    {
+        digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
+        delay(500);
+
+        Dht22SensorResult result = dht22Sensor->read(3);
+
+        digitalWrite(CONFIG_INDICATOR_LED_PIN, LOW);
+        delay(500);
+    }
+    else if (CONFIG_MODE)
     {
         httpServer->handleRequest();
         delay(500);

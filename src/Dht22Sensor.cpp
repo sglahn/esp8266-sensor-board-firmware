@@ -1,15 +1,19 @@
 #include "Dht22Sensor.h"
 
-Dht22Sensor::Dht22Sensor(int pin)
+Dht22Sensor::Dht22Sensor(int dataPin, int powerPin)
 {
-    dht = new DHT(pin, DHTTYPE, 15);
-    dht->begin();
-    delay(1000);
-    Serial.println("DHT22 Sensor initialized.");
+    this->powerPin = powerPin;
+    dht = new DHT(dataPin, DHTTYPE);
+
+    Serial.println("Initialized DHT22 Sensor, Data Pin: " + String((int)dataPin) + ", Power Pin: " +String((int)powerPin));
 }
 
 Dht22SensorResult Dht22Sensor::read(int maxNumberAttemps, int attemps)
 {
+    digitalWrite(powerPin, HIGH);
+    delay(1000);
+    dht->begin();
+
     float humidity = dht->readHumidity();
     float temperature = dht->readTemperature(false);
 
@@ -30,6 +34,8 @@ Dht22SensorResult Dht22Sensor::read(int maxNumberAttemps, int attemps)
     }
     Serial.println("DHT22: " + String((float)temperature) + "C");
     Serial.println("DHT22: " + String((float)humidity) + "%");
+
+    digitalWrite(powerPin, LOW);
 
     return Dht22SensorResult
     {
