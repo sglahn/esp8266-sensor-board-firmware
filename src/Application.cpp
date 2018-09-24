@@ -160,7 +160,10 @@ void process()
             String((float)result.temperature),
             String((float)result.humidity),
             String((int)result.numberOfReadAttemps) };
-        thingspeak->sendData(data, 5);
+        if (THINGSPEAK_ENABLED) 
+        {    
+            thingspeak->sendData(data, 5);
+        }
     }
     Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " attemps to read DHT22");
 }
