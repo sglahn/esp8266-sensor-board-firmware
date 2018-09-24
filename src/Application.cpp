@@ -29,6 +29,15 @@ ThingspeakClient* thingspeak;
 bool CONFIG_MODE = true;
 bool DEBUG_MODE = false;
 
+String getFirmwareVersion()
+{
+    if (buildVersion.equals("BUILD_VERSION"))
+    {
+        buildVersion = "0.1";
+    }
+    return buildVersion;
+}
+
 void restartHandler()
 {
     Serial.println("Restarting..");
@@ -67,16 +76,14 @@ void systemInfoHandler()
     httpServer->sendResponse("{ \"VCC\": \"" + String(ESP.getVcc()) + "\", " +
         "\"SDK Version\": \"" + String(ESP.getSdkVersion()) + "\", " +
         "\"Free Heap\": \"" + String(ESP.getFreeHeap()) + "\", " +
+        "\"Firmware\": \"" + String(getFirmwareVersion()) + "\", " +
         "\"Reset Reason\": \"" + String(ESP.getResetReason()) + "\"}");
 }
 
-String getFirmwareVersion()
-{
-    if (buildVersion.equals("BUILD_VERSION"))
-    {
-        buildVersion = "0.1";
-    }
-    return buildVersion;
+void handleFirmwareUpdate() {
+    Serial.println("Firmware update detected.");
+    strcpy(config.firmware, getFirmwareVersion().c_str());
+    eepromConfig->writeConfigurationToEeprom(config);
 }
 
 void setup()
@@ -122,7 +129,13 @@ void setup()
         eepromConfig->writeConfigurationToEeprom(defaultConfig);
     }
     config = eepromConfig->readConfigurationFromEeprom();
+
+    if (!getFirmwareVersion().equals(String(config.firmware))) {
+        handleFirmwareUpdate();
+    }
+
     thingspeak = new ThingspeakClient(config.thingspeakApiKey);
+    
     if (DEBUG_MODE)
     {
         Serial.println("Booting in DEBUG_MODE");
