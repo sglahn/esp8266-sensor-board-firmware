@@ -159,7 +159,7 @@ void loop()
         digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
         delay(500);
 
-        Dht22SensorResult result = dht22Sensor->read(3);
+        dht22Sensor->read(3);
 
         digitalWrite(CONFIG_INDICATOR_LED_PIN, LOW);
         delay(500);
