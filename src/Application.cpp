@@ -27,7 +27,6 @@ Dht22Sensor* dht22Sensor;
 Configuration config;
 ThingspeakClient* thingspeak;
 bool CONFIG_MODE = true;
-bool DEBUG_MODE = false;
 
 String getFirmwareVersion()
 {
@@ -136,11 +135,7 @@ void setup()
 
     thingspeak = new ThingspeakClient(config.thingspeakApiKey);
     
-    if (DEBUG_MODE)
-    {
-        Serial.println("Booting in DEBUG_MODE");
-    }
-    else if (CONFIG_MODE || !wifiManager->connectToWifi(config))
+    if (CONFIG_MODE || !wifiManager->connectToWifi(config))
     {
         digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
         CONFIG_MODE = true;
@@ -167,17 +162,7 @@ void process()
 
 void loop()
 {
-    if (DEBUG_MODE)
-    {
-        digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
-        delay(500);
-
-        dht22Sensor->read(3);
-
-        digitalWrite(CONFIG_INDICATOR_LED_PIN, LOW);
-        delay(500);
-    }
-    else if (CONFIG_MODE)
+    if (CONFIG_MODE)
     {
         httpServer->handleRequest();
         delay(500);
