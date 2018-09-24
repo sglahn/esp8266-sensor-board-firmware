@@ -27,6 +27,7 @@ Dht22Sensor* dht22Sensor;
 Configuration config;
 ThingspeakClient* thingspeak;
 bool CONFIG_MODE = true;
+bool THINGSPEAK_ENABLED = true;
 
 String getFirmwareVersion()
 {
@@ -129,12 +130,16 @@ void setup()
     }
     config = eepromConfig->readConfigurationFromEeprom();
 
-    if (!getFirmwareVersion().equals(String(config.firmware))) {
+    if (!getFirmwareVersion().equals(String(config.firmware))) 
+    {
         handleFirmwareUpdate();
     }
 
-    thingspeak = new ThingspeakClient(config.thingspeakApiKey);
-    
+    if (THINGSPEAK_ENABLED) 
+    {
+        thingspeak = new ThingspeakClient(config.thingspeakApiKey);
+    }
+
     if (CONFIG_MODE || !wifiManager->connectToWifi(config))
     {
         digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
