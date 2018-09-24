@@ -23,7 +23,7 @@ class HttpServer
 
         void start();
 
-        String handleRequest();
+        void handleRequest();
 
         void sendResponse(Configuration configuration);
 

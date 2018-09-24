@@ -15,7 +15,7 @@ void HttpServer::addHandler(String uri, HandlerFunction handler)
     server->on(uri.c_str(), handler);
 }
 
-String HttpServer::handleRequest() {
+void HttpServer::handleRequest() {
     server->handleClient();
 }
 
