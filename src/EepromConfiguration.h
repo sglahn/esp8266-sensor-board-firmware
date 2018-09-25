@@ -12,7 +12,7 @@ struct Configuration
     char password[33]; // WLAN password
     char identifier[11]; // Identifier of board
     int sleepInterval; // Deep Sleep interval (Minutes)
-    char otaUrl[33]; // Url to download Over-the-Air firmware updates
+    char otaUrl[64]; // Url to download Over-the-Air firmware updates
     char thingspeakApiKey[17]; // API Key for Thingspeak.com
 };
 

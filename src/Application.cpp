@@ -5,6 +5,7 @@
 #include "WifiManager.h"
 #include "Dht22Sensor.h"
 #include "ThingspeakClient.h"
+#include "ESP8266httpUpdate.h"
 
 // To read VCC
 ADC_MODE(ADC_VCC);
@@ -168,6 +169,23 @@ void process()
     Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " attemps to read DHT22");
 }
 
+void checkAndInstallFirmwareUpdate() {
+    Serial.println("Checking for firmware updates on URL: " + String(config.otaUrl));
+    t_httpUpdate_return ret = ESPhttpUpdate.update(config.otaUrl, getFirmwareVersion());
+    switch(ret) 
+    {
+        case HTTP_UPDATE_FAILED:
+            Serial.println("Update failed.");
+            break;
+        case HTTP_UPDATE_NO_UPDATES:
+            Serial.println("No Update.");
+            break;
+        case HTTP_UPDATE_OK:
+            Serial.println("Update ok.");
+            break;
+    }
+}
+
 void loop()
 {
     if (CONFIG_MODE)
@@ -177,6 +195,8 @@ void loop()
     }
     else
     {
+        checkAndInstallFirmwareUpdate();
+
         process();
 
         int sleepTime = config.sleepInterval;
