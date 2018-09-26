@@ -100,7 +100,7 @@ logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 try:
     server = http.server.HTTPServer(('localhost', PORT_NUMBER), HttpHandler)
     if CERT_FILE:
-        server.socket = ssl.wrap_socket(server.socket, certfile='server.pem', server_side=True)
+        server.socket = ssl.wrap_socket(server.socket, certfile=CERT_FILE, server_side=True)
 
     print('Started httpserver on port ' + str(PORT_NUMBER) + ', firmware directory: ' + FIRMWARE_DIRECTORY)
     server.serve_forever()
