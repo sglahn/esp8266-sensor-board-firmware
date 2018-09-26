@@ -95,8 +95,6 @@ if args.log:
 if args.cert:
     CERT_FILE = args.cert    
 
-    
-
 logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 
 try:
