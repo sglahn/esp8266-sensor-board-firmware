@@ -8,13 +8,14 @@
 struct Configuration
 {
     char firmware[21]; // firmware version
-    char ssid[33]; // WLAN ssid
-    char password[33]; // WLAN password
+    char ssid[33]; // Wifi SSID
+    char password[33]; // Wifi password
     char identifier[33]; // Identifier of board
     int sleepInterval; // Deep Sleep interval (Minutes)
     char otaUrl[65]; // Url to download Over-the-Air firmware updates
-    char mqttBrokerUrl[65]; // Url to mqqt broker
-    char thingspeakApiKey[17]; // API Key for Thingspeak.com
+    char mqttBrokerUrl[65]; // Url to MQTT broker
+    char mqttUser[33]; // Username for MQTT broker
+    char mqttPassword[33]; // Password fot MQTT broker
 };
 
 class EepromConfiguration

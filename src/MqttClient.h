@@ -16,9 +16,11 @@ class MqttClient
         String name;
         String clientId;
         bool retained;
+        String username;
+        String password;
 
      public:
-        MqttClient(String mqttBroker, String identifier, bool retained = true)
+        MqttClient(String mqttBroker, String identifier, String brokerUser, String brokerPassword, bool retained = true)
         {
             String url = mqttBroker;           
             if (url.indexOf(':') > -1) 
@@ -32,6 +34,8 @@ class MqttClient
             }
             name = identifier;
             this->retained = retained;
+            username = brokerUser;
+            password = brokerPassword;
             clientId = name + "-" + WiFi.macAddress();
             client = new PubSubClient(server.c_str(), port, wifiClient);
         }
@@ -44,7 +48,16 @@ class MqttClient
             }
             
             Serial.println("Connecting to MQTT broker: " + server + ":" + String(port));
-            if (client->connect(clientId.c_str()))
+            bool connected = false;
+            if (username.length() > 0 && password.length() > 0) 
+            {
+                connected = client->connect(clientId.c_str(), username.c_str(), password.c_str());
+            }
+            else 
+            {
+                connected = client->connect(clientId.c_str());
+            }
+            if (connected)
             {
                 for(unsigned int i=0; i<data.count(); i++)
                 {

@@ -59,9 +59,10 @@ void saveConfigurationHandler()
     strcpy(config.password, httpServer->getRequestArgument("password").c_str());
     strcpy(config.identifier, httpServer->getRequestArgument("identifier").c_str());
     config.sleepInterval = atoi(httpServer->getRequestArgument("sleepInterval").c_str());
-    strcpy(config.thingspeakApiKey, httpServer->getRequestArgument("thingspeakKey").c_str());
     strcpy(config.otaUrl, httpServer->getRequestArgument("otaUrl").c_str());
     strcpy(config.mqttBrokerUrl, httpServer->getRequestArgument("mqttBrokerUrl").c_str());
+    strcpy(config.mqttUser, httpServer->getRequestArgument("mqttUser").c_str());
+    strcpy(config.mqttPassword, httpServer->getRequestArgument("mqttPassword").c_str());
     eepromConfig->writeConfigurationToEeprom(config);
     httpServer->sendResponse(config);
 }
@@ -137,7 +138,7 @@ void setup()
         handleFirmwareUpdate();
     }
 
-    mqtt = new MqttClient(config.mqttBrokerUrl, config.identifier);
+    mqtt = new MqttClient(config.mqttBrokerUrl, config.identifier, config.mqttUser, config.mqttPassword);
     
     if (CONFIG_MODE || !wifiManager->connectToWifi(config))
     {

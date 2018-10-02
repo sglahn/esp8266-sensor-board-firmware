@@ -30,9 +30,10 @@ void HttpServer::sendResponse(Configuration configuration)
     body.replace("{{password}}", configuration.password);
     body.replace("{{identifier}}", configuration.identifier);
     body.replace("{{sleepInterval}}", String((int)configuration.sleepInterval).c_str());
-    body.replace("{{thingspeakApiKey}}", configuration.thingspeakApiKey);
     body.replace("{{otaUrl}}", configuration.otaUrl);
     body.replace("{{mqttBrokerUrl}}", configuration.mqttBrokerUrl);
+    body.replace("{{mqttUser}}", configuration.mqttUser);
+    body.replace("{{mqttPassword}}", configuration.mqttPassword);
     page += body;
     page += FPSTR(HTTP_FOOT);
 
