@@ -47,17 +47,7 @@ class MqttClient
                 return;
             }
             
-            Serial.println("Connecting to MQTT broker: " + server + ":" + String(port));
-            bool connected = false;
-            if (username.length() > 0 && password.length() > 0) 
-            {
-                connected = client->connect(clientId.c_str(), username.c_str(), password.c_str());
-            }
-            else 
-            {
-                connected = client->connect(clientId.c_str());
-            }
-            if (connected)
+            if (connect())
             {
                 for(unsigned int i=0; i<data.count(); i++)
                 {
@@ -77,6 +67,19 @@ class MqttClient
             else
             {
                 Serial.println("Connection to MQTT broker failed.");
+            }
+        }
+    private:
+        bool connect()
+        {
+            Serial.println("Connecting to MQTT broker: " + server + ":" + String(port));
+            if (username.length() > 0 && password.length() > 0) 
+            {
+                return client->connect(clientId.c_str(), username.c_str(), password.c_str());
+            }
+            else 
+            {
+                return client->connect(clientId.c_str());
             }
         }
 };
