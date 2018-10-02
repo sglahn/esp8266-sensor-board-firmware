@@ -10,10 +10,10 @@ struct Configuration
     char firmware[21]; // firmware version
     char ssid[33]; // WLAN ssid
     char password[33]; // WLAN password
-    char identifier[11]; // Identifier of board
+    char identifier[33]; // Identifier of board
     int sleepInterval; // Deep Sleep interval (Minutes)
-    char otaUrl[64]; // Url to download Over-the-Air firmware updates
-    char mqttBrokerUrl[64]; // Url to mqqt broker
+    char otaUrl[65]; // Url to download Over-the-Air firmware updates
+    char mqttBrokerUrl[65]; // Url to mqqt broker
     char thingspeakApiKey[17]; // API Key for Thingspeak.com
 };
 

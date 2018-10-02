@@ -123,7 +123,7 @@ void setup()
 
     // Reset triggerd by manual push of reset button?
     CONFIG_MODE = ESP.getResetReason().equals("External System");
-    
+
     if (eepromConfig->isEepromEmpty())
     {
         Configuration defaultConfig = eepromConfig->createDefaultConfiguration();
