@@ -1,11 +1,12 @@
 #include <ESP8266WiFi.h>
+#include <HashMap.h>
 
 #include "EepromConfiguration.h"
 #include "HttpServer.h"
 #include "WifiManager.h"
 #include "Dht22Sensor.h"
-#include "ThingspeakClient.h"
 #include "ESP8266httpUpdate.h"
+#include "MqttClient.h"
 
 // To read VCC
 ADC_MODE(ADC_VCC);
@@ -26,9 +27,8 @@ HttpServer* httpServer;
 WifiManager* wifiManager;
 Dht22Sensor* dht22Sensor;
 Configuration config;
-ThingspeakClient* thingspeak;
+MqttClient* mqtt;
 bool CONFIG_MODE = true;
-bool THINGSPEAK_ENABLED = true;
 
 String getFirmwareVersion()
 {
@@ -61,6 +61,7 @@ void saveConfigurationHandler()
     config.sleepInterval = atoi(httpServer->getRequestArgument("sleepInterval").c_str());
     strcpy(config.thingspeakApiKey, httpServer->getRequestArgument("thingspeakKey").c_str());
     strcpy(config.otaUrl, httpServer->getRequestArgument("otaUrl").c_str());
+    strcpy(config.mqttBrokerUrl, httpServer->getRequestArgument("mqttBrokerUrl").c_str());
     eepromConfig->writeConfigurationToEeprom(config);
     httpServer->sendResponse(config);
 }
@@ -122,7 +123,7 @@ void setup()
 
     // Reset triggerd by manual push of reset button?
     CONFIG_MODE = ESP.getResetReason().equals("External System");
-
+    
     if (eepromConfig->isEepromEmpty())
     {
         Configuration defaultConfig = eepromConfig->createDefaultConfiguration();
@@ -136,11 +137,8 @@ void setup()
         handleFirmwareUpdate();
     }
 
-    if (THINGSPEAK_ENABLED) 
-    {
-        thingspeak = new ThingspeakClient(config.thingspeakApiKey);
-    }
-
+    mqtt = new MqttClient(config.mqttBrokerUrl, config.identifier);
+    
     if (CONFIG_MODE || !wifiManager->connectToWifi(config))
     {
         digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
@@ -154,35 +152,34 @@ void process()
 {
     int maxReads = 3;
     Dht22SensorResult result = dht22Sensor->read(maxReads);
-    if (result.temperature != -1 && result.humidity != -1)
-    {
-        String data[] = { getFirmwareVersion(),
-            config.identifier,
-            String((float)result.temperature),
-            String((float)result.humidity),
-            String((int)result.numberOfReadAttemps) };
-        if (THINGSPEAK_ENABLED) 
-        {    
-            thingspeak->sendData(data, 5);
-        }
-    }
+    
+    HashMap<String, String> data;
+    data.put("firmware", getFirmwareVersion());
+    data.put("temperature", ((String)result.temperature).c_str());
+    data.put("humidity", ((String)result.humidity).c_str());
+    data.put("attemps", ((String)result.numberOfReadAttemps).c_str());
+
+    mqtt->sendData(data);
     Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " attemps to read DHT22");
 }
 
 void checkAndInstallFirmwareUpdate() {
-    Serial.println("Checking for firmware updates on URL: " + String(config.otaUrl));
-    t_httpUpdate_return ret = ESPhttpUpdate.update(config.otaUrl, getFirmwareVersion());
-    switch(ret) 
+    if (strlen(config.otaUrl) != 0) 
     {
-        case HTTP_UPDATE_FAILED:
-            Serial.println("Update failed.");
-            break;
-        case HTTP_UPDATE_NO_UPDATES:
-            Serial.println("No Update.");
-            break;
-        case HTTP_UPDATE_OK:
-            Serial.println("Update ok.");
-            break;
+        Serial.println("Checking for firmware updates on URL: " + String(config.otaUrl));
+        t_httpUpdate_return ret = ESPhttpUpdate.update(config.otaUrl, getFirmwareVersion());
+        switch(ret) 
+        {
+            case HTTP_UPDATE_FAILED:
+                Serial.println("Update failed.");
+                break;
+            case HTTP_UPDATE_NO_UPDATES:
+                Serial.println("No Update.");
+                break;
+            case HTTP_UPDATE_OK:
+                Serial.println("Update ok.");
+                break;
+        }
     }
 }
 

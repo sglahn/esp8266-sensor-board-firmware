@@ -13,6 +13,7 @@ struct Configuration
     char identifier[11]; // Identifier of board
     int sleepInterval; // Deep Sleep interval (Minutes)
     char otaUrl[64]; // Url to download Over-the-Air firmware updates
+    char mqttBrokerUrl[64]; // Url to mqqt broker
     char thingspeakApiKey[17]; // API Key for Thingspeak.com
 };
 

@@ -46,6 +46,7 @@ Configuration EepromConfiguration::createDefaultConfiguration()
         "",
 	    0,
 	    "",
+        "",
         ""
     };
 }
@@ -64,6 +65,7 @@ Configuration EepromConfiguration::readConfigurationFromEeprom()
     Serial.println(config.identifier);
     Serial.println(config.sleepInterval);
     Serial.println(config.otaUrl);
+    Serial.println(config.mqttBrokerUrl);
     Serial.println(config.thingspeakApiKey);
     return config;
 }

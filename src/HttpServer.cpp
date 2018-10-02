@@ -32,6 +32,7 @@ void HttpServer::sendResponse(Configuration configuration)
     body.replace("{{sleepInterval}}", String((int)configuration.sleepInterval).c_str());
     body.replace("{{thingspeakApiKey}}", configuration.thingspeakApiKey);
     body.replace("{{otaUrl}}", configuration.otaUrl);
+    body.replace("{{mqttBrokerUrl}}", configuration.mqttBrokerUrl);
     page += body;
     page += FPSTR(HTTP_FOOT);
 

@@ -19,6 +19,11 @@ class ThingspeakClient
         }
 
         void sendData(String fields[], int numberOfFields) {
+            if (apiKey.length() == 0)
+            {
+                return;
+            }
+            
             String postStr = apiKey;
             for(int i=0; i<numberOfFields; i++)
             {
@@ -27,7 +32,8 @@ class ThingspeakClient
             }
             postStr.replace(" ", "%20");
 
-            if (client.connect(host, port)) {
+            if (client.connect(host, port))
+            {
                 client.print("POST /update HTTP/1.1\n");
                 client.print("Host: " + String(host) + "\n");
                 client.print("Connection: close\n");
@@ -38,8 +44,9 @@ class ThingspeakClient
                 client.print("\n\n");
                 client.print(postStr);
             }
-            else {
-                Serial.println("Failed to connect to Thingspeak ");
+            else
+            {
+                Serial.println("Failed to connect to Thingspeak");
             }
             client.stop();
         }
