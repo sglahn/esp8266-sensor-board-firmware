@@ -48,7 +48,11 @@ class Mqtt2InfluxDb:
         self.topic = config['mqtt']['topic']
         self.mqtt = mqtt.Client(client_id='Mqtt2InfluxDB-Client-' + str(hex(get_mac())))
         self.mqtt.username_pw_set(config['mqtt']['username'], config['mqtt']['password'])
-        self.mqtt.connect(config['mqtt']['host'], int(config['mqtt']['port']), 60)
+        try:
+            self.mqtt.connect(config['mqtt']['host'], int(config['mqtt']['port']), 60)
+        except:
+            print('Failed to connect to MQTT Broker: ' + config['mqtt']['host'] + ":" + config['mqtt']['port'])
+            quit()
         self.mqtt.on_connect = self.__onConnect
         self.mqtt.on_message = self.__onMessage
 
@@ -69,7 +73,7 @@ class Mqtt2InfluxDb:
                 print('Creating database: ' + database)
                 self.influx.create_database(database)
         except:
-            print("Failed to connect to InfluxDB instance: " + config['influxdb']['host'] + ":" + config['influxdb']['port'])
+            print('Failed to connect to InfluxDB instance: ' + config['influxdb']['host'] + ":" + config['influxdb']['port'])
             quit()
 
     def __createDataSet(self, msg):
