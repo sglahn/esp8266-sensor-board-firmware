@@ -73,12 +73,16 @@ class Mqtt2InfluxDb:
         time = payload['timestamp'] 
         messurement = payload['key'] 
         value = payload['value']
+        try:
+            floatValue = float(value)
+        except:
+            floatValue = None
         return [
             {
                 'measurement': messurement,
                 'time': time,
                 'fields': {
-                    'value': value
+                    'value': floatValue if floatValue else value
                 }
             }
         ]
