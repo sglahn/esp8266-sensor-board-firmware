@@ -63,15 +63,19 @@ class Mqtt2InfluxDb:
     def __initInfluxDbClient(self, config):
         database = config['influxdb']['database']
         self.influx = InfluxDBClient(config['influxdb']['host'], config['influxdb']['port'], config['influxdb']['username'], config['influxdb']['password'], database)
-        dbAlreadyExists =  next((item for item in self.influx.get_list_database() if item['name'] == database), False)
-        if not dbAlreadyExists:
-            print('Creating database: ' + database)
-            self.influx.create_database(database)
+        try:
+            dbAlreadyExists =  next((item for item in self.influx.get_list_database() if item['name'] == database), False)
+            if not dbAlreadyExists:
+                print('Creating database: ' + database)
+                self.influx.create_database(database)
+        except:
+            print("Failed to connect to InfluxDB instance: " + config['influxdb']['host'] + ":" + config['influxdb']['port'])
+            quit()
 
     def __createDataSet(self, msg):
         payload = json.loads(msg.payload.decode('utf-8'))
         time = payload['timestamp'] 
-        messurement = payload['key'] 
+        messurement = msg.topic #payload['key'] 
         value = payload['value']
         try:
             floatValue = float(value)
