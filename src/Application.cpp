@@ -1,5 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <HashMap.h>
+#include <time.h>
 
 #include "EepromConfiguration.h"
 #include "HttpServer.h"
@@ -89,6 +90,22 @@ void handleFirmwareUpdate() {
     eepromConfig->writeConfigurationToEeprom(config);
 }
 
+boolean connectToTimeserver()
+{
+    configTime(3 * 3600, 0, "de.pool.ntp.org");
+    Serial.println("Waiting for ntp...");
+    for (int i=0; i<10; i++)
+    {
+        if (time_t now = time(nullptr)) 
+        {
+            Serial.println(ctime(&now));
+            return true;
+        }
+        delay(i * 1000);
+    }
+    return false;
+}
+
 void setup()
 {
     pinMode(CONFIG_INDICATOR_LED_PIN, OUTPUT);
@@ -144,24 +161,34 @@ void setup()
     {
         digitalWrite(CONFIG_INDICATOR_LED_PIN, HIGH);
         CONFIG_MODE = true;
+
         wifiManager->setupAccessPoint();
         httpServer->start();
+    } else {
+        connectToTimeserver();
     }
+}
+
+String jsonPayload(time_t& time, String key, String value) {
+    //return  "{ \"timestamp\":\"" + String(time) + "\", \"" + key + "\":\"" + value + "\" }";
+    return  "{\"timestamp\":\"" + String(time) + "\",\"key\":\"" + key + "\",\"value\":\"" + value + "\"}";
 }
 
 void process()
 {
     int maxReads = 3;
-    Dht22SensorResult result = dht22Sensor->read(maxReads);
+    time_t now = time(nullptr);
     
+    Dht22SensorResult result = dht22Sensor->read(maxReads);
+    Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " attemps to read DHT22");
+
     HashMap<String, String> data;
-    data.put("firmware", getFirmwareVersion());
-    data.put("temperature", ((String)result.temperature).c_str());
-    data.put("humidity", ((String)result.humidity).c_str());
-    data.put("attemps", ((String)result.numberOfReadAttemps).c_str());
+    data.put("firmware", jsonPayload(now, "firmware", getFirmwareVersion()));
+    data.put("temperature", jsonPayload(now, "temperature", ((String)result.temperature).c_str()));
+    data.put("humidity", jsonPayload(now, "humidity", ((String)result.humidity).c_str()));
+    data.put("attemps", jsonPayload(now, "attemps", ((String)result.numberOfReadAttemps).c_str()));
 
     mqtt->sendData(data);
-    Serial.println("Needed " + String((int)result.numberOfReadAttemps) + " attemps to read DHT22");
 }
 
 void checkAndInstallFirmwareUpdate() {
