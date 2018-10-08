@@ -19,7 +19,7 @@
 import argparse
 import datetime
 import configparser
-import simplejson as json
+import json
 import paho.mqtt.client as mqtt
 from uuid import getnode as get_mac
 from influxdb import InfluxDBClient
@@ -61,8 +61,12 @@ class Mqtt2InfluxDb:
 
     def __onMessage(self, client, userdata, msg):
         print('Received: ' + msg.payload.decode('utf-8') + ' on ' + msg.topic)
-        data = self.__createDataSet(msg)
-        self.influx.write_points(data)
+        try:
+            data = self.createDataSet(msg)
+            if len(data):
+                self.influx.write_points(data)
+        except Exception as e:    
+            print('Decoding of JSON failed: ' + str(e))
 
     def __initInfluxDbClient(self, config):
         database = config['influxdb']['database']
@@ -76,24 +80,24 @@ class Mqtt2InfluxDb:
             print('Failed to connect to InfluxDB instance: ' + config['influxdb']['host'] + ":" + config['influxdb']['port'])
             quit()
 
-    def __createDataSet(self, msg):
+    def createDataSet(self, msg):
         payload = json.loads(msg.payload.decode('utf-8'))
-        time = payload['timestamp'] 
+        time = int(payload['timestamp'])
         messurement = msg.topic #payload['key'] 
-        value = payload['value']
         try:
-            floatValue = float(value)
+            value = float(payload['value'])
         except:
-            floatValue = None
-        return [
+            value = payload['value']
+        data = [
             {
                 'measurement': messurement,
                 'time': time,
                 'fields': {
-                    'value': floatValue if floatValue else value
+                    'value': value
                 }
             }
         ]
+        return data
 
 
 def parseArgs():
