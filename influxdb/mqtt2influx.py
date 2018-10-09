@@ -27,9 +27,6 @@ from uuid import getnode as get_mac
 from influxdb import InfluxDBClient
 
 class Mqtt2InfluxDb:
-    mqtt = None
-    influx = None
-    topic = None
 
     def __init__(self, configFile):
         config = configparser.ConfigParser()
@@ -119,11 +116,11 @@ if __name__ == '__main__':
 
     logging.basicConfig(format='[%(levelname)s] %(message)s', level=args.log)
 
-    mqtt_client = Mqtt2InfluxDb(args.config)
+    mqtt2influx = Mqtt2InfluxDb(args.config)
     try:
         logging.info('Started mqtt2influx client')
-        mqtt_client.connect()
+        mqtt2influx.connect()
     except KeyboardInterrupt:
         logging.info('Stopping mqtt2influx client')
-        mqtt_client.disconnect()
+        mqtt2influx.disconnect()
 
