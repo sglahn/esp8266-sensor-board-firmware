@@ -55,6 +55,18 @@ class Mqtt2InfluxDb:
         self.mqtt.on_connect = self.__onConnect
         self.mqtt.on_message = self.__onMessage
 
+    def __initInfluxDbClient(self, config):
+        database = config['influxdb']['database']
+        self.influx = InfluxDBClient(config['influxdb']['host'], config['influxdb']['port'], config['influxdb']['username'], config['influxdb']['password'], database)
+        try:
+            dbAlreadyExists =  next((item for item in self.influx.get_list_database() if item['name'] == database), False)
+            if not dbAlreadyExists:
+                logging.info('Creating database: ' + database)
+                self.influx.create_database(database)
+        except:
+            logging.error('Failed to connect to InfluxDB instance: ' + config['influxdb']['host'] + ":" + config['influxdb']['port'])
+            quit()
+
     def __onConnect(self, client, userdata, flags, rc):
         self.mqtt.subscribe(self.topic, 2)
 
@@ -69,18 +81,6 @@ class Mqtt2InfluxDb:
                     logging.error('Failed sending data to influxdb: ' + str(e))
         except Exception as e:    
             logging.error('Decoding of JSON failed: ' + str(e))
-
-    def __initInfluxDbClient(self, config):
-        database = config['influxdb']['database']
-        self.influx = InfluxDBClient(config['influxdb']['host'], config['influxdb']['port'], config['influxdb']['username'], config['influxdb']['password'], database)
-        try:
-            dbAlreadyExists =  next((item for item in self.influx.get_list_database() if item['name'] == database), False)
-            if not dbAlreadyExists:
-                logging.info('Creating database: ' + database)
-                self.influx.create_database(database)
-        except:
-            logging.error('Failed to connect to InfluxDB instance: ' + config['influxdb']['host'] + ":" + config['influxdb']['port'])
-            quit()
 
     def createDataSet(self, msg):
         payload = json.loads(msg.payload.decode('utf-8'))
