@@ -7,3 +7,9 @@
 .vscode/launch.json
 .vscode
 *.pyc
+
+server/conf/grafana/config/grafana.ini
+server/conf/mosquitto/config/mosquitto.conf
+server/conf/mosquitto/config/passwords.txt
+server/conf/mosquitto/data/mosquitto.db
+server/conf/mosquitto/log/mosquitto.log

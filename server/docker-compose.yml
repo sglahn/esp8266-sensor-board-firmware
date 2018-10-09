@@ -1,0 +1,28 @@
+version: '2'
+services:
+    influxdb:
+        image: influxdb:1.6.3-alpine
+        ports:
+            - "8086:8086"
+        volumes:
+            - "./conf/influxdb:/data"        
+        environment:
+            - PRE_CREATE_DB="sensordata"
+    mosquitto:
+        image: pascaldevink/rpi-mosquitto
+        ports:
+            - "9001:9001"
+            - "1883:1883"
+        volumes:
+            - "./conf/mosquitto/config:/mqtt/config:ro"
+            - "./conf/mosquitto/log:/mqtt/log"
+            - "./conf/mosquitto/data/:/mqtt/data/"
+    grafana:
+        image: grafana/grafana
+        ports:
+            - "3000:3000"
+        volumes:
+            - "./conf/grafana/config:/etc/grafana"
+            - "./conf/grafana/storage:/data"
+
+
