@@ -20,6 +20,7 @@ ADC_MODE(ADC_VCC);
 #define CONFIG_INDICATOR_LED_PIN 5
 #define EEPROM_SIZE 512
 #define SERIAL_BAUD_RATE 115200
+#define TIMEZONE 0 // UTC
 
 String buildVersion = ESCAPEQUOTE(BUILD_VERSION);
 
@@ -92,7 +93,7 @@ void handleFirmwareUpdate() {
 
 boolean connectToTimeserver()
 {
-    configTime(3 * 3600, 0, "de.pool.ntp.org");
+    configTime(TIMEZONE * 3600, 0, "pool.ntp.org", "time.nist.gov");
     Serial.println("Waiting for ntp...");
     for (int i=0; i<10; i++)
     {
@@ -170,7 +171,6 @@ void setup()
 }
 
 String jsonPayload(time_t& time, String key, String value) {
-    //return  "{ \"timestamp\":\"" + String(time) + "\", \"" + key + "\":\"" + value + "\" }";
     return  "{\"timestamp\":\"" + String(time) + "\",\"key\":\"" + key + "\",\"value\":\"" + value + "\"}";
 }
 
