@@ -26,10 +26,6 @@ import logging
 import ssl
 import http.server
 
-CERT_FILE = None
-LOG_LEVEL = 'ERROR'
-LOG_FORMAT = '%(asctime)-15s %(levelname)s %(ip)s --- %(message)s'
-PORT_NUMBER = 8000
 FIRMWARE_DIRECTORY = os.environ['HOME'] + os.sep + "firmware"
 
 class HttpHandler(http.server.BaseHTTPRequestHandler):
@@ -79,32 +75,31 @@ class HttpHandler(http.server.BaseHTTPRequestHandler):
             self.buildHtmlResponse(304)
             return
 
-parser = argparse.ArgumentParser(description='HTTP Server which delivers firmware binaries for Arduino OTA updates.')
-parser.add_argument('--dir', help='Directory containing the firmware binaries to serve. Default: ~/firmware')
-parser.add_argument('--port', help='Server port. Default: 8000.')
-parser.add_argument('--log', help='Log level. Default ERROR')
-parser.add_argument('--cert', help='SSL cert file to enable HTTPS. Default empty=No HTTPS')
-args = parser.parse_args()
 
-if args.dir:
-    FIRMWARE_DIRECTORY = args.dir
-if args.port:
-    PORT_NUMBER = int(args.port)
-if args.log:
-    LOG_LEVEL = args.log.upper()
-if args.cert:
-    CERT_FILE = args.cert    
+def parseArgs():
+    parser = argparse.ArgumentParser(description='HTTP Server which delivers firmware binaries for Arduino OTA updates.')
+    parser.add_argument('--dir', help='Directory containing the firmware binaries to serve. Default: ~/firmware', default=os.environ['HOME'] + os.sep + "firmware")
+    parser.add_argument('--port', help='Server port. Default: 8000.', default=8000)
+    parser.add_argument('--log', help='Log level. Default ERROR', default='INFO')
+    parser.add_argument('--cert', help='SSL cert file to enable HTTPS. Default empty=No HTTPS', default=None)
+    return parser.parse_args()
 
-logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+if __name__ == '__main__':
+    args = parseArgs()
 
-try:
-    server = http.server.HTTPServer(('', PORT_NUMBER), HttpHandler)
-    if CERT_FILE:
-        server.socket = ssl.wrap_socket(server.socket, certfile=CERT_FILE, server_side=True)
+    if args.dir:
+        FIRMWARE_DIRECTORY = args.dir
 
-    print('Started httpserver on port ' + str(PORT_NUMBER) + ', firmware directory: ' + FIRMWARE_DIRECTORY)
-    server.serve_forever()
+    logging.basicConfig(format='%(asctime)-15s %(levelname)s %(ip)s --- %(message)s', level=args.log)
 
-except KeyboardInterrupt:
-    print('Shutting down httpserver')
-    server.socket.close()
+    try:
+        server = http.server.HTTPServer(('', args.port), HttpHandler)
+        if args.cert:
+            server.socket = ssl.wrap_socket(server.socket, certfile=args.cert, server_side=True)
+
+        print('Started httpserver on port ' + str(args.port) + ', firmware directory: ' + FIRMWARE_DIRECTORY)
+        server.serve_forever()
+
+    except KeyboardInterrupt:
+        print('Shutting down httpserver')
+        server.socket.close()
