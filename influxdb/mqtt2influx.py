@@ -21,6 +21,7 @@ import datetime
 import configparser
 import json
 import pytz
+import logging
 import paho.mqtt.client as mqtt
 from uuid import getnode as get_mac
 from influxdb import InfluxDBClient
@@ -52,7 +53,7 @@ class Mqtt2InfluxDb:
         try:
             self.mqtt.connect(config['mqtt']['host'], int(config['mqtt']['port']), 60)
         except:
-            print('Failed to connect to MQTT Broker: ' + config['mqtt']['host'] + ":" + config['mqtt']['port'])
+            logging.error('Failed to connect to MQTT Broker: ' + config['mqtt']['host'] + ":" + config['mqtt']['port'])
             quit()
         self.mqtt.on_connect = self.__onConnect
         self.mqtt.on_message = self.__onMessage
@@ -61,13 +62,16 @@ class Mqtt2InfluxDb:
         self.mqtt.subscribe(self.topic, 2)
 
     def __onMessage(self, client, userdata, msg):
-        print('Received: ' + msg.payload.decode('utf-8') + ' on ' + msg.topic)
+        logging.debug('Received: ' + msg.payload.decode('utf-8') + ' on ' + msg.topic)
         try:
             data = self.createDataSet(msg)
             if len(data):
-                self.influx.write_points(data)
+                try:
+                    self.influx.write_points(data)
+                except Exception as e:
+                    logging.error('Failed sending data to influxdb: ' + str(e))
         except Exception as e:    
-            print('Decoding of JSON failed: ' + str(e))
+            logging.error('Decoding of JSON failed: ' + str(e))
 
     def __initInfluxDbClient(self, config):
         database = config['influxdb']['database']
@@ -75,10 +79,10 @@ class Mqtt2InfluxDb:
         try:
             dbAlreadyExists =  next((item for item in self.influx.get_list_database() if item['name'] == database), False)
             if not dbAlreadyExists:
-                print('Creating database: ' + database)
+                logging.info('Creating database: ' + database)
                 self.influx.create_database(database)
         except:
-            print('Failed to connect to InfluxDB instance: ' + config['influxdb']['host'] + ":" + config['influxdb']['port'])
+            logging.error('Failed to connect to InfluxDB instance: ' + config['influxdb']['host'] + ":" + config['influxdb']['port'])
             quit()
 
     def createDataSet(self, msg):
@@ -106,16 +110,20 @@ class Mqtt2InfluxDb:
 def parseArgs():
     parser = argparse.ArgumentParser(description='MQTT client which saves received messages in an InfluxDB instance.')
     parser.add_argument('--config', help='File containing configuration. Default: mqtt2influx.ini', default='mqtt2influx.ini')
+    parser.add_argument('--log', help='Log level. Default INFO', default='INFO')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parseArgs()
+
+    logging.basicConfig(format='[%(levelname)s] %(message)s', level=args.log)
+
     mqtt_client = Mqtt2InfluxDb(args.config)
     try:
-        print('Started mqtt2influx client')
+        logging.info('Started mqtt2influx client')
         mqtt_client.connect()
     except KeyboardInterrupt:
-        print('Stopping mqtt2influx client')
+        logging.info('Stopping mqtt2influx client')
         mqtt_client.disconnect()
 
