@@ -20,6 +20,7 @@ import argparse
 import datetime
 import configparser
 import json
+import pytz
 import paho.mqtt.client as mqtt
 from uuid import getnode as get_mac
 from influxdb import InfluxDBClient
@@ -82,8 +83,10 @@ class Mqtt2InfluxDb:
 
     def createDataSet(self, msg):
         payload = json.loads(msg.payload.decode('utf-8'))
-        time = int(payload['timestamp'])
-        messurement = msg.topic #payload['key'] 
+        timezone = pytz.timezone('Europe/Berlin')
+        timestamp = int(payload['timestamp'])
+        time = datetime.datetime.fromtimestamp(timestamp, timezone)
+        messurement = msg.topic 
         try:
             value = float(payload['value'])
         except:
