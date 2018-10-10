@@ -13,3 +13,4 @@ server/conf/mosquitto/config/mosquitto.conf
 server/conf/mosquitto/config/passwords.txt
 server/conf/mosquitto/data/mosquitto.db
 server/conf/mosquitto/log/mosquitto.log
+server/conf/mqtt2influxdb/mqtt2influx.ini
