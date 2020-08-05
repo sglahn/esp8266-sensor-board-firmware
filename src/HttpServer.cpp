@@ -21,7 +21,7 @@ void HttpServer::handleRequest() {
 
 void HttpServer::sendResponse(Configuration configuration)
 {
-    String page = FPSTR(HTTP_HEAD);
+    String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_SCRIPT);
     page += FPSTR(HTTP_STYLE);
     String body = FPSTR(HTTP_BODY);

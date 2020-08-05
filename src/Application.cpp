@@ -1,12 +1,12 @@
 #include <ESP8266WiFi.h>
 #include <HashMap.h>
 #include <time.h>
+#include <ESP8266httpUpdate.h>
 
 #include "EepromConfiguration.h"
 #include "HttpServer.h"
 #include "WifiManager.h"
 #include "Dht22Sensor.h"
-#include "ESP8266httpUpdate.h"
 #include "MqttClient.h"
 
 // To read VCC
